@@ -294,6 +294,7 @@ def evaluate_checkpoint(
     snr_levels: list[int] | None = None,
     n_boot: int = 1000,
     name: str | None = None,
+    all_snr: bool = False,
 ) -> dict:
     """Evaluate a saved checkpoint on one split using the data paths stored in its config.
 
@@ -309,7 +310,7 @@ def evaluate_checkpoint(
     assert_group_safe(splits)
     if split_hash(splits) != ckpt["split_hash"]:
         raise RuntimeError("splits file changed since training (hash mismatch); refusing to evaluate")
-    snr = snr_levels if snr_levels is not None else dcfg["eval_snr"]
+    snr = None if all_snr else snr_levels if snr_levels is not None else dcfg["eval_snr"]
     df = filter_rows(splits, split, snr, dcfg["image_dir"], dcfg["require_files"])
     ds = SpectrogramDataset(df, dcfg["image_dir"], dcfg["size"])
     pred = predict(model, ds, 64, device)

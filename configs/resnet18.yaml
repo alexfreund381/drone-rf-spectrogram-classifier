@@ -1,0 +1,24 @@
+# Run B1: ImageNet-pretrained ResNet18, same data and split as A1.
+# Stage 1 trains only the new 2-class head; stage 2 fine-tunes everything at a lower rate.
+run_name: b1_resnet18_pretrained
+seed: 42
+output_dir: runs
+data:
+  splits_csv: data/manifest/splits.csv
+  image_dir: data/selected
+  size: 224
+  train_snr: [10, 12, 14, 16, 18, 20]
+  eval_snr: [10, 12, 14, 16, 18, 20]
+  require_files: true
+model:
+  name: resnet18
+  pretrained: true
+train:
+  batch_size: 32
+  head_epochs: 3
+  head_lr: 0.001
+  epochs: 10
+  lr: 0.0001
+  weight_decay: 0.0001
+  patience: 4
+  scheduler: none

@@ -1,0 +1,22 @@
+# Run A1: scratch CNN, trained on high-SNR images only, no augmentation.
+run_name: a1_scratch_cnn
+seed: 42
+output_dir: runs
+data:
+  splits_csv: data/manifest/splits.csv
+  image_dir: data/selected
+  size: 224
+  train_snr: [10, 12, 14, 16, 18, 20]
+  eval_snr: [10, 12, 14, 16, 18, 20]   # model selection uses the same condition as training
+  require_files: true                   # use only images that are on disk
+model:
+  name: scratch_cnn
+  widths: [32, 64, 128, 256]
+  dropout: 0.3
+train:
+  batch_size: 32
+  epochs: 20
+  lr: 0.001
+  weight_decay: 0.0001
+  patience: 5
+  scheduler: cosine

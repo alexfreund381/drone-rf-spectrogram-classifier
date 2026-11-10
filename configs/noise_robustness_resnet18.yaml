@@ -1,0 +1,23 @@
+# Run C1b: pretrained ResNet18 trained on every SNR level available on disk.
+run_name: c1b_resnet18_all_snr
+seed: 42
+output_dir: runs
+data:
+  splits_csv: data/manifest/splits.csv
+  image_dir: data/selected
+  size: 224
+  train_snr: null
+  eval_snr: null
+  require_files: true
+model:
+  name: resnet18
+  pretrained: true
+train:
+  batch_size: 32
+  head_epochs: 2
+  head_lr: 0.001
+  epochs: 6
+  lr: 0.0001
+  weight_decay: 0.0001
+  patience: 3
+  scheduler: none

@@ -1,0 +1,23 @@
+# Run C1: same scratch CNN as A1, but trained on every SNR level available on disk.
+# Model selection uses validation images at all SNR levels.
+run_name: c1_scratch_cnn_all_snr
+seed: 42
+output_dir: runs
+data:
+  splits_csv: data/manifest/splits.csv
+  image_dir: data/selected
+  size: 224
+  train_snr: null
+  eval_snr: null
+  require_files: true
+model:
+  name: scratch_cnn
+  widths: [32, 64, 128, 256]
+  dropout: 0.3
+train:
+  batch_size: 32
+  epochs: 10
+  lr: 0.001
+  weight_decay: 0.0001
+  patience: 3
+  scheduler: cosine

@@ -33,7 +33,7 @@ def cmd_baselines(args: argparse.Namespace) -> int:
 def cmd_evaluate(args: argparse.Namespace) -> int:
     from .train import evaluate_checkpoint
 
-    report = evaluate_checkpoint(args.checkpoint, args.split, args.snr, args.n_boot, args.name)
+    report = evaluate_checkpoint(args.checkpoint, args.split, args.snr, args.n_boot, args.name, args.all_snr)
     print(json.dumps({k: report[k] for k in ("split", "n_images", "n_groups", "per_image", "per_group")}, indent=2))
     return 0
 
@@ -123,6 +123,7 @@ def register(sub: argparse._SubParsersAction) -> None:
     s.add_argument("--checkpoint", required=True)
     s.add_argument("--split", default="val", choices=["train", "val", "test"])
     s.add_argument("--snr", type=int, nargs="+", help="restrict to these SNR levels")
+    s.add_argument("--all-snr", action="store_true", help="ignore the config's eval_snr and use every SNR level")
     s.add_argument("--n-boot", type=int, default=1000)
     s.add_argument("--name", help="suffix of the output files (default: split name)")
     s.set_defaults(func=cmd_evaluate)
