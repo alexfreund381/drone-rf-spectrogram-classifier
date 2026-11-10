@@ -10,11 +10,12 @@ stored in git; everything goes under `data/`, which is git-ignored.
 | What | Bytes | Command | Result |
 |---|---|---|---|
 | All label files (archive tail) | 285 MB | `index-labels` | `data/manifest/manifest.csv`, counts in `artifacts/audit/` |
-| Pilot image sample (12 regions × 256 MiB) | 3.2 GB | `fetch-regions` | `data/selected/images/`, log in `data/selected/fetch_log.csv` |
+| Pilot image sample (12 regions × 256 MiB) | 3.2 GB | `fetch-regions` | 10,407 images in `data/selected/images/` (3.0 GB on disk), log in `data/selected/fetch_log.csv` |
 | Full archive | — | — | **not downloaded** |
 
-Measured download speed from Zenodo on this connection: about 3 MB/s per connection. At that rate the
-full archive would take roughly 9–10 hours.
+Download speed from Zenodo on this connection, measured once: about 2.9 MB/s. The 3.2 GB sample took
+roughly 55 minutes while other downloads were running. At 3 MB/s the full archive would take roughly
+9–10 hours.
 
 ## Route 1 — Labels only (285 MB, a few minutes)
 

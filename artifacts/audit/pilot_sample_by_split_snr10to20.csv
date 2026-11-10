@@ -1,0 +1,7 @@
+split,binary_label,images,source_samples,groups
+test,0,117,110,30
+test,1,265,239,67
+train,0,531,487,137
+train,1,1085,983,295
+val,0,138,124,30
+val,1,257,233,68

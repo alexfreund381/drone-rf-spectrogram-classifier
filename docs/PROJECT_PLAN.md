@@ -13,6 +13,11 @@ Companion documents:
 | [DOCUMENTATION_GUIDE.md](DOCUMENTATION_GUIDE.md) | How we write technical docs, conceptual Q&A, and presentation notes |
 | [qa/CONCEPTS_QA.md](qa/CONCEPTS_QA.md) | Plain-language questions and answers (study guide / defense prep) |
 | [presentation/PRESENTATION_NOTES.md](presentation/PRESENTATION_NOTES.md) | Slide-by-slide source material for the presentation |
+| [DATASET_AUDIT.md](DATASET_AUDIT.md) | Measured counts and label-quality findings |
+| [SPLIT_PROTOCOL.md](SPLIT_PROTOCOL.md) | The frozen train/validation/test split and leak checks |
+| [DOWNLOAD_AND_STORAGE.md](DOWNLOAD_AND_STORAGE.md) | How to get the data and what has been downloaded |
+| [CONFOUNDS_AND_LIMITATIONS.md](CONFOUNDS_AND_LIMITATIONS.md) | What the results can and cannot show |
+| [technical/](technical/) | One page per pipeline stage |
 
 ### How to read the evidence labels
 
@@ -62,14 +67,18 @@ seven-class variant. These never replace the binary deliverable.
 
 | Item | Status |
 |---|---|
-| Local git repository | Created |
-| GitHub remote | **Not created yet** — GitHub CLI is not installed/authenticated on this machine (see §11) |
-| Dataset metadata, README, archive layout probe | **VERIFIED** (see §4.2) |
-| Full 101 GB archive download | Not started |
-| Exact class counts / independent sample counts | **UNKNOWN** — needs the label index (§4.5) |
+| GitHub repository | Public: https://github.com/alexfreund381/drone-rf-spectrogram-classifier |
 | Professor approval of dataset and task | **Approved** (reported by the team on 2026-11-10) |
-| Code (parsers, pipeline, models, tests) | Not started |
-| Trained models, results | None. No accuracy number exists yet. |
+| Code: data pipeline, splits, both models, training, evaluation, baselines, confound checks, CLI | **Implemented** |
+| Tests | 120 passing on synthetic fixtures (`pytest -q`); 1 integration test passed (real ImageNet ResNet18 weights downloaded and verified) |
+| Label audit of the whole dataset | **VERIFIED**: 333,164 label files, 12,814 source samples, 12,504 usable ([DATASET_AUDIT.md](DATASET_AUDIT.md)) |
+| Train/val/test split | **Frozen**, hash `ddfcbce03785a3af` ([SPLIT_PROTOCOL.md](SPLIT_PROTOCOL.md)) |
+| Images on disk | Pilot sample: 10,407 images (3.2 GB of the 101 GB archive), 7,107 distinct source samples |
+| Full 101 GB archive | Not downloaded |
+| Experiment configs (A1, A2, B1, C1, C1b) | Written in `configs/` |
+| **Baselines, trained models, results** | **None yet. No real training run has been made and no accuracy number exists.** |
+| CI workflow | Written (`.github/workflows/ci.yml`); its result on GitHub has not been checked |
+| Deadline, grading rubric, presentation length, workstream owners | UNKNOWN — the team must add them |
 
 ---
 
@@ -80,12 +89,12 @@ The exact grading rubric and the deadline have not been given to us. Do not inve
 | # | Requirement (as known) | How we satisfy it | Evidence location | Status |
 |---|---|---|---|---|
 | 1 | Professor approves dataset/task | Approved; reported by the team on 2026-11-10 | — | Done |
-| 2 | Interesting real-world dataset; ≥100 observations per class; ~5,000 images preferred | Count *independent source samples* per class, not noise copies | `docs/DATASET_AUDIT.md` | UNKNOWN until label index built |
-| 3 | Approval request states URL, download link, size, shape, class counts, targets, what is predicted | Already approved; the same facts are in `docs/DATASET_AUDIT.md` | `docs/DATASET_AUDIT.md` | Done |
-| 4 | First network built from scratch, no pretrained weights | `ScratchCNN` in `models.py`, run A1 | `runs/`, `docs/RESULTS.md` | Not started |
-| 5 | Second model from a pretrained network; choose fine-tuning epochs | ResNet18 (ImageNet), two-stage fine-tune, early stopping on validation | `runs/`, `docs/RESULTS.md` | Not started |
-| 6 | Train / validation / test split; tune hyperparameters and augmentation; record experiments; analyze errors | Group-safe frozen split, experiment matrix (§7), error gallery | `docs/SPLIT_PROTOCOL.md`, `docs/EXPERIMENTS.md` | Not started |
-| 7 | Runnable prototype and team presentation; everyone can explain decisions | CLI + docs + Q&A + presentation notes | repo, `docs/qa/`, `docs/presentation/` | In progress (docs) |
+| 2 | Interesting real-world dataset; ≥100 observations per class; ~5,000 images preferred | 8,562 drone and 3,942 background source samples (not counting noise copies) | `docs/DATASET_AUDIT.md` §2 | Done (VERIFIED) |
+| 3 | Dataset described: URL, download link, size, shape, class counts, targets, what is predicted | Audit document | `docs/DATASET_AUDIT.md` | Done |
+| 4 | First network built from scratch, no pretrained weights | `ScratchCNN` in `models.py`, run A1 | `runs/`, `docs/RESULTS.md` | Code done; **not trained yet** |
+| 5 | Second model from a pretrained network; choose fine-tuning epochs | ResNet18 (ImageNet), two-stage fine-tune, early stopping on validation | `runs/`, `docs/RESULTS.md` | Code done, weights verified; **not trained yet** |
+| 6 | Train / validation / test split; tune hyperparameters and augmentation; record experiments; analyze errors | Group-safe frozen split; experiment matrix (§7); error gallery | `docs/SPLIT_PROTOCOL.md`, `runs/` | Split done; experiments **not run yet** |
+| 7 | Runnable prototype and team presentation; everyone can explain decisions | CLI + docs + Q&A + presentation notes | repo, `docs/qa/`, `docs/presentation/` | Prototype runs; presentation outline only |
 
 AI assistance is permitted (Level 5), but every team member must be able to explain the code and the
 choices. That is why the Q&A and presentation documents exist.
@@ -148,48 +157,40 @@ why §4.6 quarantines `target*` images with zero boxes instead of calling them p
 | Tag → system: `target0` DJI, `target1` FutabaT14, `target2` FutabaT7, `target3` Graupner, `target4` Turnigy, `target5` Taranis, `labnoise` Wi-Fi/Bluetooth | README |
 | YOLOv8s reaches mAP50 ≈ 0.95 on clean data | README. Not comparable to our accuracy/F1. |
 
-### 4.4 Estimates and open unknowns
+### 4.4 Measured counts and remaining unknowns
 
-| Item | Value | Basis |
+The estimates originally in this section have been replaced by measurements. Full tables are in
+[DATASET_AUDIT.md](DATASET_AUDIT.md).
+
+| Item | Value | Label |
 |---|---|---|
-| Number of images | **ESTIMATE** ≈ 330,000 | 101.1 GB ÷ ~302 KB mean PNG size from only 7 files |
-| Number of source samples | **ESTIMATE** ≈ 12,000–13,000 | images ÷ 26; highest sample ID seen is 12,243 |
-| Size of the labels region | **ESTIMATE** ≈ 270 MB at the very end of the archive | 1,241 label members per MiB |
-| Class mix | **ESTIMATE**, tail sample only: ~33% `labnoise`, `target1` the largest drone class | 1,241 label names; not a count |
-| Exact images per class and per SNR | **UNKNOWN** | needs label index |
-| Independent source samples per class | **UNKNOWN** | needs label index |
-| Are sample IDs unique across tags? | **UNKNOWN**. Observed IDs look like per-class blocks (`target1` ≈ 1.7k–4.2k, `target3` ≈ 5.7k–6.0k, `target5` ≈ 7.2k–7.9k, `labnoise` ≈ 9.4k–12.2k), which suggests yes. The authors' code assumes yes. | must be tested |
-| Do neighbouring sample IDs come from the same longer recording? | **UNKNOWN** and important for leakage (§4.8) | not recoverable from filenames alone |
-| Is there a separate noise-free ("pristine") image? | **UNKNOWN**. The README lists only 26 SNR levels; the authors' code calls level 20 "no noise". | audit |
-| Image axis orientation (which axis is time, which is frequency), sample rate, bandwidth | **UNKNOWN**. The dataset README does not state them. Do not label plot axes until the paper confirms. | read paper |
-| What "SNR" means for a `labnoise` image, which has no drone signal | **UNKNOWN** | read paper |
-| Are box positions identical across SNR versions of one sample? | **UNKNOWN** | audit |
+| Label files | 333,164 | VERIFIED |
+| Source samples | 12,814, each at exactly 26 SNR levels | VERIFIED |
+| Usable source samples | 8,562 `drone_rf`, 3,942 `background_rf` | VERIFIED |
+| Quarantined | 310 drone-tagged samples with no boxes (215 of them DJI) | VERIFIED |
+| Sample IDs unique across tags | Yes; contiguous 0–12,813, one block per tag | VERIFIED |
+| Labels identical across a sample's SNR versions | Yes, for every sample | VERIFIED |
+| Separate noise-free ("pristine") files | None in the label set | VERIFIED |
+| Image format | 640×640, 8-bit grayscale PNG | VERIFIED on the 10,407-image pilot sample; CLAIMED for the rest |
+| Neighbouring sample IDs independent? | Evidence says no (box counts of neighbours are correlated) | VERIFIED correlation; interpretation is ours |
+| Number of independent recording sessions | No session identifier exists | UNKNOWN |
+| Image axis orientation, sample rate, bandwidth | Not in the README; do not label plot axes until the paper confirms | UNKNOWN |
+| What "SNR" means for a `labnoise` image | | UNKNOWN |
+| Full-archive MD5 | Not checked; archive not downloaded | — |
 
 ### 4.5 How we get the data (ingestion strategy)
 
-The archive is one 101 GB uncompressed TAR. It cannot be downloaded per class. This machine has
-331 GB free disk, so the whole archive fits, but we should not download before we know what we need.
+The archive is one 101 GB uncompressed TAR and cannot be downloaded per class. Three routes are
+implemented; details and exact commands are in [DOWNLOAD_AND_STORAGE.md](DOWNLOAD_AND_STORAGE.md).
 
-**Step 1 — Label index by range request (cheap, do first).**
-Because the labels sit at the end of the archive and the server supports ranges, we can fetch roughly
-the last 300–400 MB and parse every label file without touching the images. That gives us, for every
-image: class tag, sample ID, SNR, number of boxes, box classes. From that we get exact class counts,
-independent sample counts, the quarantine list, and the split — enough for the professor email.
-*This is a tested hypothesis for the last 1 MiB only; the tool must walk backwards until it reaches
-the first `labels/` member and report exactly what it found.*
-
-**Step 2 — Decide and freeze the split and the subset** (§4.8, §4.9) from the label index alone,
-before looking at any image.
-
-**Step 3 — Get the selected images.** Two options:
-
-| Option | Disk needed | Pros | Cons |
+| Route | Download | Gives | State |
 |---|---|---|---|
-| **A. Full download, then selective extract** (recommended) | 101 GB + subset | Resumable (`curl -C -`); MD5 can be checked against Zenodo; rerunnable for new subsets | Hours of download (about 2.3 h at 100 Mbit/s, 4.5 h at 50 Mbit/s) |
-| B. Streaming filter | subset only | No 101 GB on disk; MD5 can still be computed on the stream | Must restart from zero on failure; a new subset needs another 101 GB transfer |
+| 1. Label index from the archive tail (`index-labels`) | 285 MB | Manifest, audit, split for all 333,164 images | **Done** |
+| 2. Partial image sample by byte range (`fetch-regions`) | 3.2 GB so far | 10,407 images spread over all tags and SNR levels | **Done (pilot)**; can be extended with another `--phase` |
+| 3. Full archive, MD5 check, selective extraction (`md5`, `audit`, `extract`) | 101 GB, roughly 9–10 hours at the ~3 MB/s we measured | Any chosen subset; archive checksum | Not done; tested on a fixture archive only |
 
-Fetching individual images by range request is not practical: image offsets are unknown without
-walking ~330k headers one request at a time.
+The split was frozen from label metadata before any image was downloaded, so the choice of images
+could not be influenced by how they look.
 
 **Safety rules for extraction.** Never `tar.extractall`. Reject absolute paths, `..`, symlinks,
 hardlinks, device files, and duplicate member names; cap member size; write only inside the output
@@ -215,10 +216,9 @@ not switch to it silently.
 
 Quarantined images are counted and reported, never silently dropped and never used as negatives.
 
-Open design question to settle once the index exists: boxes may disappear at low SNR for the same
-sample (the detector cannot see a buried burst). Options are (a) label per image as above, or
-(b) label per source sample from its highest-SNR version. We decide after measuring how often this
-happens, and document the choice in `docs/SPLIT_PROTOCOL.md`.
+Settled by the audit: label files are identical across all 26 SNR versions of every sample, so
+per-image and per-sample labeling give the same result. A drone image keeps the label `drone_rf`
+even at SNR levels where the burst is buried in noise.
 
 The labels are automatic annotations, not hand-verified ground truth. We will visually audit a small
 stratified sample and say so in the report.
@@ -251,10 +251,9 @@ One row per image, stored as CSV (Parquet if size requires).
 recording with different noise added. Putting one in train and another in test would let the model
 "recognize" test images it has effectively already seen.
 
-- Split unit: `split_group_id`. Minimum is `(class_tag, source_sample_id)`. If we can recover which
-  samples were cut from the same longer recording, the group becomes that recording.
-- If recording provenance cannot be recovered, we use **contiguous ID blocks** within each class as a
-  conservative stand-in (neighbouring IDs stay together) and state the remaining risk openly.
+- Split unit: `split_group_id` = class tag + block of 20 consecutive sample IDs. The dataset has no
+  recording identifier, and the audit found neighbouring IDs to be related, so neighbours stay
+  together. The frozen split and its sizes are in [SPLIT_PROTOCOL.md](SPLIT_PROTOCOL.md).
 - Ratio about 70 / 15 / 15 by groups, stratified by class tag. Fixed seed. The split file gets a
   content hash that every run records.
 - The test set is used once, at the end. It never influences model choice, hyperparameters,
@@ -264,11 +263,29 @@ recording with different noise added. Putting one in train and another in test w
 
 ### 4.9 Sampling plan
 
-We do not need 330k images. Target: about 5,000 independent source samples if the data supports it,
-balanced between the two classes, each split with ≥100 independent samples per class where possible.
-Baseline runs use one high-SNR image per sample; robustness runs add more SNR versions of the *same*
-samples within their assigned split. Every table reports both "independent source samples" and
-"images". We never present 26 noise copies as 26 observations.
+We do not need 333,164 images. The current working set is the pilot sample of 10,407 images
+(`artifacts/audit/pilot_sample_*.csv`):
+
+| Split | Class | Images | Source samples | Groups |
+|---|---|---|---|---|
+| train | background_rf | 2,273 | 1,551 | 138 |
+| train | drone_rf | 4,922 | 3,380 | 311 |
+| val | background_rf | 528 | 355 | 30 |
+| val | drone_rf | 1,143 | 779 | 68 |
+| test | background_rf | 475 | 323 | 30 |
+| test | drone_rf | 1,066 | 719 | 68 |
+
+- It covers 7,107 distinct source samples, on average 1.5 images each, at arbitrary SNR levels.
+- Its tag mix matches the full dataset to within 0.2 percentage points per tag, and each SNR level has
+  366–448 images.
+- Baseline runs (A1, A2, B1) train on its SNR 10–20 dB images (1,616 training images). Robustness
+  runs (C1) train on all of its SNR levels (7,195 training images).
+- Per-SNR evaluation has only 50–84 images per SNR level in validation and in test, so single-SNR
+  points will be noisy. Extending the sample (another `fetch-regions --phase`) or downloading the
+  full archive would tighten them.
+
+Every table reports "independent source samples" and "images" separately. We never present 26 noise
+copies as 26 observations.
 
 ### 4.10 The confound everyone must be able to explain
 
@@ -333,11 +350,12 @@ flowchart TD
 | `evaluate.py` | Metrics, confusion matrix, per-SNR and per-family slices, group aggregation, group bootstrap | checkpoint + split → metrics JSON |
 | `experiments.py` | Config loading, run registry, comparison table | `runs/` → table |
 | `visualization.py` | Galleries, training curves, SNR plots, error examples | logs → PNG figures |
+| `confounds.py` | Brightness-by-class table; hidden-burst test | checkpoint + boxes → JSON/CSV |
 | `infer.py` | Predict one prepared spectrogram | image + checkpoint → class scores |
 | `cli.py` | One entry point for everything | subcommands below |
 
-`synthetic.py` and `baselines.py` are additions to the originally suggested tree; they keep test data
-generation and the required baseline out of unrelated modules.
+`synthetic.py`, `baselines.py` and `confounds.py` are additions to the originally suggested tree, and
+`cli_train.py` holds the training-related subcommands so `cli.py` stays readable.
 
 Design rules:
 - The network only ever sees pixels. Filename, tag, SNR, and box count travel as metadata for
@@ -346,35 +364,44 @@ Design rules:
 - Each stage writes a file the next stage reads (manifest → split → extracted set → run directory),
   so any stage can be rerun and inspected on its own.
 
-### 5.3 Command-line interface (target; names become final when implemented)
+### 5.3 Command-line interface (implemented)
 
 ```
 python -m drone_rf.cli source-info
-python -m drone_rf.cli make-synthetic-fixture --output data/fixtures
-python -m drone_rf.cli index-labels --url <zenodo-tar-url> --out artifacts/label_index.csv
-python -m drone_rf.cli audit --archive <file.tar> | --dataset-dir <dir> --out artifacts/manifest.csv
-python -m drone_rf.cli split --manifest artifacts/manifest.csv --out artifacts/splits.csv --seed 42
-python -m drone_rf.cli extract --archive <file.tar> --splits artifacts/splits.csv --output data/selected
+python -m drone_rf.cli make-synthetic-fixture --output data/fixtures [--edge-cases] [--tar fixture.tar]
+python -m drone_rf.cli index-labels --out data/manifest/manifest.csv --boxes-out data/manifest/label_text.csv --summary-dir artifacts/audit
+python -m drone_rf.cli audit (--archive <file.tar> | --dataset-dir <dir>) --out <manifest.csv> --summary-dir <dir>
+python -m drone_rf.cli split --manifest data/manifest/manifest.csv --out data/manifest/splits.csv --seed 42 --block-size 20
+python -m drone_rf.cli fetch-regions --output data/selected --regions 12 --region-mb 256 --image-region-end 100792909312 --splits data/manifest/splits.csv
+python -m drone_rf.cli extract --archive <file.tar> --splits <splits.csv> --output data/selected
+python -m drone_rf.cli md5 --archive <file.tar>
+python -m drone_rf.cli model-summary
+python -m drone_rf.cli baselines --config configs/binary_cnn.yaml --split val
 python -m drone_rf.cli train --config configs/binary_cnn.yaml
 python -m drone_rf.cli train --config configs/resnet18.yaml
-python -m drone_rf.cli evaluate --checkpoint <ckpt.pt> --split test
-python -m drone_rf.cli compare --runs runs/
+python -m drone_rf.cli evaluate --checkpoint runs/<run>/best.pt --split val [--all-snr] [--name <suffix>]
+python -m drone_rf.cli confound-check --checkpoint runs/<run>/best.pt --split val [--all-snr]
+python -m drone_rf.cli compare --runs runs --split val --out artifacts/results/compare_val.csv
+python -m drone_rf.cli figures --runs runs --split val --image-dir data/selected
+python -m drone_rf.cli infer --checkpoint runs/<run>/best.pt --image <spectrogram.png>
 ```
 
-None of these exist yet.
+Every command has `--help`. Commands that have been run on real data so far: `source-info`,
+`index-labels`, `split`, `fetch-regions`, `model-summary`. The rest have only been run on synthetic
+fixtures by the tests.
 
 ### 5.4 Models
 
 **Model A — ScratchCNN (random initialization).**
 Input `[1, 224, 224]`. Four stages of `Conv3×3 → BatchNorm → ReLU → MaxPool2`, channel widths
-32 → 64 → 128 → 256, then global average pooling, dropout, and a linear layer to 2 logits. Expected
-feature map sizes 112 → 56 → 28 → 14. Exact parameter count will be printed by the code and recorded,
-not guessed here.
+32 → 64 → 128 → 256, then global average pooling, dropout, and a linear layer to 2 logits. Feature
+map sizes 112 → 56 → 28 → 14. 388,834 parameters (output of `model-summary`).
 
 **Model B — ResNet18 (ImageNet weights).**
 `torchvision.models.resnet18(weights=ResNet18_Weights.DEFAULT)`. The grayscale image is copied into
 three channels and normalized with ImageNet statistics. The final layer is replaced with a 2-class
-head. Stage 1: backbone frozen, train the head. Stage 2: unfreeze and fine-tune at a lower learning
+head (11,177,538 parameters; 1,026 trainable while the backbone is frozen). Stage 1: backbone
+frozen, train the head. Stage 2: unfreeze and fine-tune at a lower learning
 rate. Epoch count is chosen by early stopping on validation macro-F1. If the weights cannot be
 downloaded, this model is reported as blocked; a randomly initialized ResNet18 is never called
 "pretrained".
@@ -398,11 +425,23 @@ description, checkpoint path. Stored as JSONL inside `runs/<run_id>/`.
 | GPU | Intel Arc integrated graphics only — **no CUDA GPU** |
 | Free disk | 331 GB on C: |
 
-Consequences: training here runs on CPU, which is workable for 224×224 images and a subset of a few
-thousand samples but slow for large SNR sweeps. If a teammate has an NVIDIA GPU, or we use Google
-Colab, heavy runs go there; the code must run unchanged on CPU and CUDA. Dependencies: PyTorch,
-torchvision, NumPy, Pillow, pandas, scikit-learn, matplotlib, PyYAML, pytest, ruff. Versions get
-pinned in `pyproject.toml` when the code lands.
+Measured on this machine at 224×224, batch size 32 (2026-11-10, while a download was running):
+
+| | Training speed | Evaluation speed |
+|---|---|---|
+| Scratch CNN | about 25–33 images/s | about 83 images/s |
+| ResNet18 (all layers training) | about 15–21 images/s | about 58 images/s |
+| PNG decode + resize | about 445 images/s | |
+
+What that means for the planned runs: one epoch over the 1,616 high-SNR training images takes about
+one minute for the scratch CNN and about a minute and a half for ResNet18. One epoch over all 7,195
+training images takes about four minutes (scratch CNN) or six minutes (ResNet18). Epoch budgets in
+`configs/` were set with these numbers so each run should finish in roughly an hour or less; actual
+run times will be recorded in each run's `meta.json`.
+
+The code runs unchanged on CUDA. If a teammate has an NVIDIA GPU, or we use Google Colab, larger
+sweeps go there. Dependencies and minimum versions are in `pyproject.toml`; this machine uses
+PyTorch 2.15.0 (CPU build).
 
 ### 5.7 Repository layout
 
@@ -508,14 +547,17 @@ fixture deliberately includes the awkward cases:
 
 ### 7.1 Experiment matrix
 
-| Run | Model | Training data | What changes | Priority |
-|---|---|---|---|---|
-| A0 | Majority class; energy baseline | fixed split | reference point | must |
-| A1 | Scratch CNN | one high-SNR image per sample | no augmentation | must |
-| A2 | Scratch CNN | same as A1 | one controlled augmentation | should |
-| B1 | Pretrained ResNet18 | same as A1 | head training then fine-tuning | must |
-| C1 | Better of A/B | several SNR levels per training sample | noise robustness | should |
-| C2 | Better of A/B | same as its base run | one of: learning rate, weight decay, input size | optional |
+| Run | Model | Training data | What changes | Config | Status |
+|---|---|---|---|---|---|
+| A0 | Majority, brightness and energy baselines | SNR 10–20 dB | reference point | `binary_cnn.yaml` via `baselines` | not run |
+| A1 | Scratch CNN | SNR 10–20 dB | no augmentation | `binary_cnn.yaml` | not run |
+| A2 | Scratch CNN | same as A1 | one augmentation bundle | `binary_cnn_aug.yaml` | not run |
+| B1 | Pretrained ResNet18 | same as A1 | head training, then fine-tuning | `resnet18.yaml` | not run |
+| C1 | Scratch CNN | all SNR levels | noise robustness | `noise_robustness.yaml` | not run |
+| C1b | Pretrained ResNet18 | all SNR levels | noise robustness | `noise_robustness_resnet18.yaml` | not run |
+| C2 | Better of A/B | same as its base run | one of: learning rate, weight decay, input size | to be written | optional |
+
+Priority if time is short: A0, A1, B1 first; then C1; then A2 and C1b.
 
 All runs share one split file and one test set. Only one factor changes between compared runs.
 
@@ -544,15 +586,15 @@ No claims of statistical significance from correlated SNR copies. No comparison 
 
 ## 8. Phases and acceptance criteria
 
-| Phase | Work | Done when |
+| Phase | Work | State on 2026-11-10 |
 |---|---|---|
-| 0 Setup | Repo, plan, docs guide, environment facts, source probe | **Done locally**; GitHub remote outstanding |
-| 1 Data metadata | Parsers, synthetic fixtures, TAR/range tools, label index, manifest, audit | Tests pass; `DATASET_AUDIT.md` has exact counts; feasibility gate answered; approval email sendable |
-| 2 Splits and preprocessing | Group-safe split, subset selection, extraction, transforms, preview gallery | Leak tests pass on real manifest; split hash frozen; `SPLIT_PROTOCOL.md` written |
-| 3 Scratch CNN | Model, dataset, training loop, metrics, A0 and A1 | Overfit check passes; A1 logged with real numbers |
-| 4 ResNet18 | Pretrained weights verified, two-stage fine-tune, B1 | B1 logged on the same split |
-| 5 Robustness and analysis | A2, C1, optional C2, test-set evaluation, plots, confound analysis | `RESULTS.md` and `CONFOUNDS_AND_LIMITATIONS.md` generated from logs |
-| 6 Presentation and release | Report, Q&A complete, slides built from notes, demo | Every teammate can answer the Q&A for the whole project |
+| 0 Setup | Repo, plan, docs guide, environment facts, source probe | **Done** |
+| 1 Data metadata | Parsers, synthetic fixtures, TAR/range tools, label index, manifest, audit | **Done**; `DATASET_AUDIT.md` has exact counts |
+| 2 Splits and preprocessing | Group-safe split, image sample, transforms | **Done**: split frozen, 10,407 images on disk. Preview gallery not made yet |
+| 3 Scratch CNN | Model, dataset, training loop, metrics, A0 and A1 | Code and tests done. **A0 and A1 not run** |
+| 4 ResNet18 | Pretrained weights verified, two-stage fine-tune, B1 | Code and tests done, weights verified. **B1 not run** |
+| 5 Robustness and analysis | A2, C1, optional C2, test-set evaluation, plots, confound analysis | Tools written. **Nothing run** |
+| 6 Presentation and release | Report, Q&A complete, slides built from notes, demo | Q&A has 25 draft entries; presentation is an outline with placeholders |
 
 The professor has approved the dataset and task (reported by the team on 2026-11-10).
 
@@ -587,9 +629,11 @@ With three people, merge C and D's model work and move evaluation to B.
 |---|---|---|
 | Chamber-vs-building confound makes the task trivially easy | Results look impressive but mean little | Baselines and confound analysis; report honestly; SNR study and transmitter-family extension add substance |
 | Recording-level provenance not recoverable | Possible leakage between neighbouring samples | Contiguous-block split; near-duplicate scan; state limitation |
-| Empty labels on drone-tagged images | Label noise | Quarantine; measure rate per class and per SNR; decide per-image vs per-sample labeling |
+| Empty labels on drone-tagged images | Label noise | 310 samples quarantined (16.8% of DJI samples); DJI is therefore somewhat under-represented |
+| Thin bursts fade when resizing 640 → 224 | Lower accuracy than the data allows | Planned input-size ablation |
+| Few images per SNR level in val/test (50–84) | Noisy per-SNR curves | Extend the image sample; report denominators and group-bootstrap intervals |
 | No CUDA GPU on this machine | Slow training | 224×224 input, subset, Colab or a teammate's GPU |
-| 101 GB download | Time, disk | Label index first; partial image sample; full download only if the team decides it is needed |
+| 101 GB download | About 9–10 hours at the measured speed | Label index and partial image sample are done; full download only if the team decides it is needed |
 | Axis orientation and RF parameters not in README | Wrong plot labels or wrong explanations | Read the paper before stating them |
 | Deadline and rubric unknown | Planning | Get them from the assignment sheet; add here |
 
@@ -597,10 +641,19 @@ With three people, merge C and D's model work and move evaluation to B.
 
 ## 11. Immediate next steps
 
-1. **Create the GitHub repository** (needs a one-time interactive login; see README).
-2. Assign workstream owners (§9) and add the deadline and rubric.
-3. Implement Phase 1 parsers, fixtures and tests.
-4. Build the label index by range request; fill `DATASET_AUDIT.md` with exact counts.
+1. Run the baselines and the two required models on the pilot sample (each command writes to `runs/`):
+   ```
+   python -m drone_rf.cli baselines --config configs/binary_cnn.yaml --split val
+   python -m drone_rf.cli train --config configs/binary_cnn.yaml
+   python -m drone_rf.cli train --config configs/resnet18.yaml
+   ```
+2. Evaluate both checkpoints on validation images at all SNR levels, run `confound-check`, `compare`
+   and `figures`; write `docs/RESULTS.md` from those outputs.
+3. Run C1 (and A2, C1b if time allows). Choose final models using validation results only.
+4. Evaluate the chosen models once on the test split.
+5. Fill the placeholders in the presentation notes; have each Q&A entry reviewed by a teammate.
+6. Team decisions still open: workstream owners (§9), deadline and rubric, whether to extend the image
+   sample or download the full archive, and whether to try a larger input size.
 
 ---
 

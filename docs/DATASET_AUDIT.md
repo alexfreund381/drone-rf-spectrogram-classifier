@@ -13,7 +13,7 @@ python -m drone_rf.cli index-labels --out data/manifest/manifest.csv --boxes-out
 This command downloaded only the **label region** at the end of the archive (285 MB of 101.1 GB) with
 HTTP range requests and parsed all label files. It did not download the images. Statements about
 image *files* therefore rest on the labels plus the README's claim that every image has a label;
-section 5 lists what the image sample has confirmed so far.
+sections 5 and 6 list what the image sample has confirmed.
 
 ## 1. Totals (VERIFIED from label files)
 
@@ -95,19 +95,64 @@ source segments" and state this limitation.
 
 ## 5. Image files
 
-Images checked so far come from the partial image sample described in
-[DOWNLOAD_AND_STORAGE.md](DOWNLOAD_AND_STORAGE.md). Results are recorded in section 6 once measured.
-
 | Property | Status |
 |---|---|
-| 640×640, 8-bit grayscale PNG | see section 6 |
-| One image per label file for all 333,164 | CLAIMED (README); consistent with archive size |
+| 640×640, 8-bit grayscale PNG | **VERIFIED** for all 10,407 images of the pilot sample; CLAIMED for the rest |
+| One image per label file for all 333,164 | CLAIMED (README); consistent with archive size; every pilot image had a label row |
 | Full archive MD5 | not checked (archive not downloaded) |
 | Axis orientation, sample rate, bandwidth | UNKNOWN (not in README) |
 
-## 6. Image sample checks
+## 6. Pilot image sample (VERIFIED)
 
-*Filled in after the pilot image sample is fetched.*
+Fetched on 2026-11-10 with `fetch-regions` (12 byte ranges of 256 MiB, 3.2 GB in total; see
+[DOWNLOAD_AND_STORAGE.md](DOWNLOAD_AND_STORAGE.md)). Tables: `artifacts/audit/pilot_sample_*.csv`.
+
+| Check | Result |
+|---|---|
+| Images saved | 10,407 (236 quarantined images inside the ranges were skipped) |
+| All readable, 640×640, mode `L` (8-bit grayscale), PNG | 10,407 of 10,407 |
+| File size | 276–327 KB, mean 302 KB |
+| Every image matched a manifest row with a split | 10,407 of 10,407 |
+| Distinct source samples | 7,107 (1.46 images per sample on average, at most 6) |
+| Split groups covered | 645 of 646 |
+| Images per SNR level | 366–448 (400 expected if uniform) |
+
+Tag mix of the sample against the full usable dataset:
+
+| Tag | Sample images | Sample share | Full-dataset share |
+|---|---|---|---|
+| labnoise | 3,276 | 31.5% | 31.5% |
+| target1 (FutabaT14) | 2,871 | 27.6% | 27.5% |
+| target5 (Taranis) | 1,349 | 13.0% | 13.1% |
+| target0 (DJI) | 905 | 8.7% | 8.5% |
+| target4 (Turnigy) | 715 | 6.9% | 6.8% |
+| target2 (FutabaT7) | 646 | 6.2% | 6.4% |
+| target3 (Graupner) | 645 | 6.2% | 6.2% |
+
+The sample mirrors the full dataset's tag and SNR mix, which supports treating a contiguous byte range
+of this shuffled archive as an unbiased sample of images.
+
+Per split:
+
+| Split | Class | Images | Source samples | Groups |
+|---|---|---|---|---|
+| train | background_rf | 2,273 | 1,551 | 138 |
+| train | drone_rf | 4,922 | 3,380 | 311 |
+| val | background_rf | 528 | 355 | 30 |
+| val | drone_rf | 1,143 | 779 | 68 |
+| test | background_rf | 475 | 323 | 30 |
+| test | drone_rf | 1,066 | 719 | 68 |
+
+Restricted to SNR 10–20 dB (the baseline training condition): train 531 background / 1,085 drone,
+val 138 / 257, test 117 / 265 images.
+
+**First look at the pixels (four images, not a study).** At +20 dB a FutabaT14 image had mean pixel
+value 146.5 and a background image 121.6; at −30 dB both were about 211. So overall brightness rises
+strongly as SNR falls, and at high SNR the two classes may differ in plain brightness. Whether
+brightness alone separates the classes is what the baselines (run A0) will measure. Two images viewed
+by eye: the drone image shows a few thin bright bursts on a smooth background; the background image is
+covered with many narrow Wi-Fi/Bluetooth bursts. A systematic visual audit of labelled images has not
+been done yet.
 
 ## 7. What this audit does not establish
 

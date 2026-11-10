@@ -1,8 +1,8 @@
 # Conceptual Q&A
 
 Plain-language questions and answers about the project. Format and rules are in
-[../DOCUMENTATION_GUIDE.md](../DOCUMENTATION_GUIDE.md) §3. This is the starter set, written before any
-code or results exist; entries about models, training and results are added as those parts are built.
+[../DOCUMENTATION_GUIDE.md](../DOCUMENTATION_GUIDE.md) §3. No model has been trained on real data yet, so there are no entries about results; they are added
+once runs exist.
 
 All entries below are **drafts** and need review by a teammate.
 
@@ -92,15 +92,15 @@ amounts of artificial noise.
 increasing amounts of fog. You have 2,600 files but still only 100 dogs. For judging whether a model
 generalizes, the number of *different* originals is what counts.
 
-**In our project:** We estimate roughly 330,000 images from roughly 12,000–13,000 source samples
-(ESTIMATE from a small probe; exact counts come from the audit). All our tables report "independent
-source samples" separately from "images".
+**In our project:** 333,164 images come from 12,814 source samples, each at exactly 26 noise levels
+(VERIFIED, DATASET_AUDIT.md). All our tables report "independent source samples" separately from
+"images".
 
 **Follow-up you might get:** *Are the noise copies useless, then?* No. They are valuable for training
 a noise-robust model and for testing how performance falls as noise rises. They just do not count as
 extra independent evidence.
 
-*Status: draft · Evidence: ESTIMATE*
+*Status: draft · Evidence: VERIFIED*
 
 ### Q: Why can't we just shuffle all the images and split them 70/15/15?
 

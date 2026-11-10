@@ -3,8 +3,8 @@
 Slide-by-slide source material. Format and rules are in
 [../DOCUMENTATION_GUIDE.md](../DOCUMENTATION_GUIDE.md) §4. Build the deck from this file.
 
-**State on 2026-11-10:** outline only. No experiment has been run. Every results slide is a
-placeholder. Speakers and time limits are unassigned because the presentation length has not been
+**State on 2026-11-10:** dataset counts and model sizes are filled in from the audit. No experiment
+has been run, so every results slide is still a placeholder. Speakers and time limits are unassigned because the presentation length has not been
 given to us.
 
 | Section | Slides | Speaker |
@@ -73,7 +73,11 @@ box annotations to define a yes/no label per image.
 
 **Likely question:** Why not object detection? → Q&A "The dataset has bounding boxes…"
 
-**Evidence:** CLAIMED (README tag table). Class counts: `PLACEHOLDER — no audit yet`
+**Numbers for the slide (VERIFIED, `docs/DATASET_AUDIT.md` §2):** usable source samples — DJI 1,065,
+FutabaT14 3,434, FutabaT7 801, Graupner 770, Turnigy 855, Taranis 1,637 (8,562 drone in total);
+background 3,942.
+
+**Evidence:** tag meanings CLAIMED (README); counts VERIFIED (`artifacts/audit/samples_by_tag.csv`)
 
 ## Slide 4: 101 GB sounds huge, but it is the same recordings 26 times
 
@@ -81,7 +85,8 @@ box annotations to define a yes/no label per image.
 
 **On the slide:**
 - Each source sample × 26 noise levels (−30 to +20 dB)
-- Images: `PLACEHOLDER` · Independent source samples: `PLACEHOLDER`
+- 333,164 images = 12,814 source samples × 26 noise levels
+- Usable: 8,562 drone and 3,942 background source samples
 
 **Visual:** TO CREATE: one sample shown at five SNR levels.
 
@@ -90,7 +95,7 @@ not 26 times more evidence. All our counts separate images from independent samp
 
 **Likely question:** Are the noise copies useless? → Q&A "The dataset is 101 GB…"
 
-**Evidence:** `PLACEHOLDER — DATASET_AUDIT.md`
+**Evidence:** VERIFIED, `docs/DATASET_AUDIT.md` §1–2
 
 ## Slide 5: Labels are automatic, so we set uncertain images aside
 
@@ -107,9 +112,10 @@ quarantined and counted.
 **Say:** The boxes were produced by an automatic procedure. Some drone-tagged files have no boxes. We
 do not guess; we set them aside and report how many.
 
-**Likely question:** How many did you exclude? → `PLACEHOLDER`
+**Likely question:** How many did you exclude? → 310 of 8,872 drone-tagged source samples (8,060
+images); 215 of them are DJI.
 
-**Evidence:** Empty drone-tagged labels exist: VERIFIED in a 1 MiB probe. Counts: `PLACEHOLDER`
+**Evidence:** VERIFIED, `artifacts/audit/quarantine_by_reason_and_tag.csv`
 
 *Handoff:* "With labels defined, the next risk is fooling ourselves in how we split the data."
 
@@ -124,7 +130,8 @@ training.
 
 **On the slide:**
 - Wrong: shuffle images → same recording in train and test
-- Right: assign each recording's whole group to one split
+- Right: all 26 noise versions, and blocks of 20 neighbouring samples, go to one split
+- 646 groups: 450 train / 98 validation / 98 test
 - Automated test fails on any overlap
 
 **Visual:** TO CREATE: leakage diagram (wrong vs. right).
@@ -134,7 +141,7 @@ test is not a real test. We split by recording group, freeze the split, and neve
 
 **Likely question:** Is grouping by sample enough? → Q&A "Why can't we just shuffle…"
 
-**Evidence:** Split sizes and hash: `PLACEHOLDER — SPLIT_PROTOCOL.md`
+**Evidence:** VERIFIED, `docs/SPLIT_PROTOCOL.md` (split hash `ddfcbce03785a3af`)
 
 ## Slide 7: A simple baseline tells us whether the CNN is doing anything clever
 
@@ -191,10 +198,10 @@ combine them into burst patterns.
 pretrained weights.
 
 **On the slide:**
-- Layer diagram with tensor sizes
-- Parameter count: `PLACEHOLDER`
+- 224×224 → 112 → 56 → 28 → 14, channels 32 → 64 → 128 → 256, then average pooling and 2 outputs
+- 388,834 parameters (ResNet18 has 11,177,538)
 
-**Evidence:** `PLACEHOLDER — models.py summary`
+**Evidence:** VERIFIED, output of `python -m drone_rf.cli model-summary`
 
 ## Slide 11: ResNet18 reuses ImageNet knowledge through transfer learning
 
