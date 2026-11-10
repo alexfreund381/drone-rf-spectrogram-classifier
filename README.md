@@ -6,7 +6,7 @@ ImageNet-pretrained ResNet18, and compare them across signal-to-noise ratios.
 
 > **Status (2026-11-10): planning stage.** The repository contains the project plan and documentation
 > framework. No code, no downloaded dataset, no trained model and no results exist yet. Professor
-> approval of the dataset is pending.
+> approved the dataset and task.
 
 This project is about passive RF emissions, not radar, and makes no claim about real-world drone
 detection.

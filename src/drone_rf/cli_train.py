@@ -85,6 +85,28 @@ def cmd_figures(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_confound_check(args: argparse.Namespace) -> int:
+    from .confounds import intensity_by_class_and_snr, masked_box_eval
+    from .dataset import filter_rows
+    from .manifest import read_manifest
+    from .train import load_checkpoint
+
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    _, ckpt = load_checkpoint(args.checkpoint)
+    dcfg = ckpt["config"]["data"]
+    name = Path(args.checkpoint).parent.name
+    rows = filter_rows(read_manifest(dcfg["splits_csv"]), "train", None, dcfg["image_dir"], dcfg["require_files"])
+    intensity_by_class_and_snr(rows, dcfg["image_dir"], dcfg["size"]).to_csv(
+        out / "intensity_by_class_and_snr_train.csv", index=False
+    )
+    result = masked_box_eval(args.checkpoint, args.label_text, args.split, all_snr=args.all_snr)
+    suffix = "all_snr" if args.all_snr else "eval_snr"
+    (out / f"masked_bursts_{name}_{args.split}_{suffix}.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
+    print(json.dumps({k: v for k, v in result.items() if k != "per_snr"}, indent=2))
+    return 0
+
+
 def cmd_infer(args: argparse.Namespace) -> int:
     from .infer import predict_image
 
@@ -141,6 +163,14 @@ def register(sub: argparse._SubParsersAction) -> None:
     s.add_argument("--image-dir", help="needed for error galleries")
     s.add_argument("--note", default="", help="text stamped on every figure, e.g. SYNTHETIC")
     s.set_defaults(func=cmd_figures)
+
+    s = sub.add_parser("confound-check", help="brightness-by-class table and hidden-burst test")
+    s.add_argument("--checkpoint", required=True)
+    s.add_argument("--label-text", default="data/manifest/label_text.csv", help="CSV from index-labels --boxes-out")
+    s.add_argument("--split", default="val", choices=["val", "test"])
+    s.add_argument("--all-snr", action="store_true")
+    s.add_argument("--out", default="artifacts/confounds")
+    s.set_defaults(func=cmd_confound_check)
 
     s = sub.add_parser("infer", help="classify one prepared spectrogram PNG")
     s.add_argument("--checkpoint", required=True)

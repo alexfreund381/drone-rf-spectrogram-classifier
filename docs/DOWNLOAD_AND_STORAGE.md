@@ -65,7 +65,7 @@ python -m drone_rf.cli extract --archive data/raw/LocalisingDroneRFEmissionsInSp
 
 | Need | Route |
 |---|---|
-| Class counts, approval email, split | 1 |
+| Class counts, audit, split | 1 |
 | Train and compare models on a CPU | 2 (thousands of images) |
 | Exactly chosen images (for example one fixed SNR for every sample), archive checksum | 3 |
 

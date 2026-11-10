@@ -90,7 +90,7 @@ identifier, so the true number of independent recording sessions is **UNKNOWN** 
 smaller than 12,814.
 
 What we do about it: the split keeps blocks of 20 neighbouring IDs together
-([SPLIT_PROTOCOL.md](SPLIT_PROTOCOL.md)). In the approval email and the report we say "12,504 usable
+([SPLIT_PROTOCOL.md](SPLIT_PROTOCOL.md)). In the report we say "12,504 usable
 source segments" and state this limitation.
 
 ## 5. Image files

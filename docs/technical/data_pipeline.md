@@ -83,7 +83,7 @@ With a fully downloaded archive: `md5`, `audit --archive <tar>`, `extract --arch
 
 | Decision | Alternatives considered | Why we chose this |
 |---|---|---|
-| Read labels by range request from the archive tail | Download all 101 GB first | 285 MB gave exact counts for every image; needed for the approval email before committing to a big download |
+| Read labels by range request from the archive tail | Download all 101 GB first | 285 MB gave exact counts for every image; needed to judge feasibility before committing to a big download |
 | Label from tag **and** label file | Tag only; label file only | Tag only would call 310 box-less drone samples "drone" without evidence. File only would make every empty file "background", including those 310 |
 | Quarantine instead of dropping or guessing | Treat zero-box drone samples as negatives | They come from the drone recording environment; using them as negatives would inject wrong labels |
 | One bad row invalidates the file | Keep the good rows | A half-parsed annotation is not trustworthy; in practice no file was invalid |

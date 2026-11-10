@@ -13,7 +13,7 @@ doing anything; it holds the architecture, dataset facts, testing strategy and c
 - **Synthetic fixtures prove the code runs, nothing else.** Never report fixture metrics as results.
 - **Group-safe splits.** All SNR variants of a source sample stay in one split. Never rerandomize the
   frozen split or use the test set for tuning.
-- **Do not claim professor approval** until a human confirms it.
+- The professor has approved the dataset and task (reported by the team on 2026-11-10).
 - **Do not download or extract the full 101 GB archive** without the user agreeing. Build the label
   index by range request first.
 - **Never commit dataset images, archives, checkpoints or secrets.** No `tar.extractall`.

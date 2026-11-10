@@ -67,7 +67,7 @@ seven-class variant. These never replace the binary deliverable.
 | Dataset metadata, README, archive layout probe | **VERIFIED** (see §4.2) |
 | Full 101 GB archive download | Not started |
 | Exact class counts / independent sample counts | **UNKNOWN** — needs the label index (§4.5) |
-| Professor approval of dataset and task | **PENDING** — not yet requested |
+| Professor approval of dataset and task | **Approved** (reported by the team on 2026-11-10) |
 | Code (parsers, pipeline, models, tests) | Not started |
 | Trained models, results | None. No accuracy number exists yet. |
 
@@ -79,9 +79,9 @@ The exact grading rubric and the deadline have not been given to us. Do not inve
 
 | # | Requirement (as known) | How we satisfy it | Evidence location | Status |
 |---|---|---|---|---|
-| 1 | Professor approves dataset/task; must ask whether RF spectrograms count as computer-vision images | Send approval email with verified counts | `docs/PROFESSOR_APPROVAL_EMAIL.md` | PENDING |
+| 1 | Professor approves dataset/task | Approved; reported by the team on 2026-11-10 | — | Done |
 | 2 | Interesting real-world dataset; ≥100 observations per class; ~5,000 images preferred | Count *independent source samples* per class, not noise copies | `docs/DATASET_AUDIT.md` | UNKNOWN until label index built |
-| 3 | Approval email lists URL, download link, size, shape, class counts, targets, what is predicted | Filled from audit output only | `docs/PROFESSOR_APPROVAL_EMAIL.md` | Not started |
+| 3 | Approval request states URL, download link, size, shape, class counts, targets, what is predicted | Already approved; the same facts are in `docs/DATASET_AUDIT.md` | `docs/DATASET_AUDIT.md` | Done |
 | 4 | First network built from scratch, no pretrained weights | `ScratchCNN` in `models.py`, run A1 | `runs/`, `docs/RESULTS.md` | Not started |
 | 5 | Second model from a pretrained network; choose fine-tuning epochs | ResNet18 (ImageNet), two-stage fine-tune, early stopping on validation | `runs/`, `docs/RESULTS.md` | Not started |
 | 6 | Train / validation / test split; tune hyperparameters and augmentation; record experiments; analyze errors | Group-safe frozen split, experiment matrix (§7), error gallery | `docs/SPLIT_PROTOCOL.md`, `docs/EXPERIMENTS.md` | Not started |
@@ -417,7 +417,7 @@ docs/           PROJECT_PLAN.md  DOCUMENTATION_GUIDE.md
                 qa/             conceptual questions and answers
                 presentation/   slide-by-slide notes
                 DATASET_AUDIT.md  SPLIT_PROTOCOL.md  CONFOUNDS_AND_LIMITATIONS.md
-                EXPERIMENTS.md  RESULTS.md  REPORT.md  PROFESSOR_APPROVAL_EMAIL.md
+                EXPERIMENTS.md  RESULTS.md  REPORT.md
 artifacts/      small generated tables and figures (committed)
 data/ runs/ checkpoints/   (git-ignored)
 ```
@@ -554,7 +554,7 @@ No claims of statistical significance from correlated SNR copies. No comparison 
 | 5 Robustness and analysis | A2, C1, optional C2, test-set evaluation, plots, confound analysis | `RESULTS.md` and `CONFOUNDS_AND_LIMITATIONS.md` generated from logs |
 | 6 Presentation and release | Report, Q&A complete, slides built from notes, demo | Every teammate can answer the Q&A for the whole project |
 
-Professor approval is needed before investing heavily past Phase 1.
+The professor has approved the dataset and task (reported by the team on 2026-11-10).
 
 ---
 
@@ -565,7 +565,7 @@ to explain every part; owners write the first draft of the matching Q&A and pres
 
 | Workstream | Code | Docs owned | Presentation section |
 |---|---|---|---|
-| **A. Data and provenance** | `sources`, `archive`, `annotations`, `manifest`, `synthetic` | Dataset audit, download guide, approval email | RF and spectrogram basics, where the data comes from, why 101 GB is misleading |
+| **A. Data and provenance** | `sources`, `archive`, `annotations`, `manifest`, `synthetic` | Dataset audit, download guide | RF and spectrogram basics, where the data comes from, why 101 GB is misleading |
 | **B. Splits and input pipeline** | `splits`, `preprocessing`, `dataset`, `baselines` | Split protocol, confounds | Group leakage, preprocessing, baselines, the environment confound |
 | **C. Scratch CNN and training** | `models` (CNN), `train`, `experiments` | Experiments log | How a CNN works, our architecture, training curves |
 | **D. ResNet18 and evaluation** | `models` (ResNet), `evaluate`, `visualization`, `infer` | Results, report assembly | Transfer learning, SNR robustness, results, failure cases, demo |
@@ -585,12 +585,11 @@ With three people, merge C and D's model work and move evaluation to B.
 
 | Risk / decision | Impact | Plan |
 |---|---|---|
-| Professor may not accept spectrograms as a computer-vision dataset | Project change | Ask early with verified counts |
 | Chamber-vs-building confound makes the task trivially easy | Results look impressive but mean little | Baselines and confound analysis; report honestly; SNR study and transmitter-family extension add substance |
 | Recording-level provenance not recoverable | Possible leakage between neighbouring samples | Contiguous-block split; near-duplicate scan; state limitation |
 | Empty labels on drone-tagged images | Label noise | Quarantine; measure rate per class and per SNR; decide per-image vs per-sample labeling |
 | No CUDA GPU on this machine | Slow training | 224×224 input, subset, Colab or a teammate's GPU |
-| 101 GB download | Time, disk | Label index first; full download only after approval |
+| 101 GB download | Time, disk | Label index first; partial image sample; full download only if the team decides it is needed |
 | Axis orientation and RF parameters not in README | Wrong plot labels or wrong explanations | Read the paper before stating them |
 | Deadline and rubric unknown | Planning | Get them from the assignment sheet; add here |
 
@@ -602,7 +601,6 @@ With three people, merge C and D's model work and move evaluation to B.
 2. Assign workstream owners (§9) and add the deadline and rubric.
 3. Implement Phase 1 parsers, fixtures and tests.
 4. Build the label index by range request; fill `DATASET_AUDIT.md` with exact counts.
-5. Send the professor approval email with those counts.
 
 ---
 

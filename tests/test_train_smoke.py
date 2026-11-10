@@ -159,7 +159,7 @@ def test_infer_single_image(cnn_run, fixture_dir):
 def test_cli_help_and_end_to_end(tmp_path, capsys):
     for cmd in (
         "source-info", "make-synthetic-fixture", "index-labels", "audit", "split", "extract", "md5", "fetch-regions",
-        "train", "baselines", "evaluate", "compare", "figures", "infer", "model-summary",
+        "train", "baselines", "evaluate", "compare", "figures", "infer", "model-summary", "confound-check",
     ):
         if cmd == "source-info":
             assert main([cmd]) == 0

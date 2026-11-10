@@ -242,9 +242,203 @@ entry is reviewed by a teammate who did not write that part. See DOCUMENTATION_G
 
 ---
 
-## To be written as the project progresses
+## Part 4 — How the models work
 
-Convolution, kernels and pooling · batch normalization and dropout · cross-entropy loss · gradients
-and AdamW · overfitting and early stopping · normalization of inputs · ResNet18 skip connections ·
-freezing vs. fine-tuning · accuracy vs. precision, recall and F1 · reading a confusion matrix ·
-bootstrap confidence intervals by group · what our measured results show and do not show.
+### Q: What does a convolution layer actually do?
+
+**Short answer:** It slides a small grid of numbers (a filter) over the image and, at each position,
+measures how well the patch under it matches the filter's pattern.
+
+**Explanation:** Think of a stencil shaped like a short vertical line. Slide it across the picture;
+wherever a vertical line sits under it, the response is large. A layer has many such filters, and the
+network learns their numbers during training instead of us designing them. Early layers end up with
+simple detectors (edges, blobs); later layers combine those into larger patterns such as "several
+thin bursts in a row".
+
+**In our project:** `ScratchCNN` has four stages. Each uses 3×3 filters: 32 in the first stage, then
+64, 128 and 256 (`src/drone_rf/models.py`).
+
+**Follow-up you might get:** *Why 3×3?* Two stacked 3×3 layers see a 5×5 area with fewer weights than
+one 5×5 layer, and it is the standard choice.
+
+*Status: draft*
+
+### Q: What is pooling and why do we halve the image four times?
+
+**Short answer:** Max pooling keeps the strongest response in each 2×2 block, shrinking the image by
+half per side. It makes the network cheaper and less sensitive to exactly where a pattern is.
+
+**Explanation:** After detecting "there is a burst edge around here", the exact pixel rarely matters.
+Pooling throws away that precision. Each halving also lets the next layer's 3×3 filters cover a
+larger part of the original image.
+
+**In our project:** 224 → 112 → 56 → 28 → 14 pixels per side. A final *global average pooling* turns
+the 14×14 map of 256 features into 256 numbers, so a burst contributes wherever it appears.
+
+**Follow-up you might get:** *Could pooling erase very thin bursts?* Max pooling keeps the strongest
+value, so thin bright bursts survive. The larger risk is the earlier resize from 640 to 224 pixels,
+which averages a burst only a few pixels wide with its surroundings. Testing a larger input size is a
+planned ablation.
+
+*Status: draft*
+
+### Q: What are batch normalization and dropout for?
+
+**Short answer:** Batch normalization keeps the numbers flowing through the network in a steady
+range so training is stable. Dropout randomly switches off some features during training so the
+network cannot rely on any single one.
+
+**In our project:** Batch norm follows every convolution. Dropout (30%) sits just before the final
+layer. Both behave differently in training and evaluation, which is why the code calls
+`model.train()` and `model.eval()`. When the ResNet backbone is frozen we also keep its batch-norm
+statistics fixed.
+
+*Status: draft*
+
+### Q: How does the network learn? What are the loss, gradients and AdamW?
+
+**Short answer:** The loss is a number saying how wrong the predictions are. Gradients say how to
+nudge each weight to reduce it. The optimizer (AdamW) applies those nudges, a small step at a time.
+
+**Explanation:** *Cross-entropy loss* is small when the network gives high probability to the correct
+class and grows quickly when it is confidently wrong. *Backpropagation* computes, for every weight,
+whether increasing it would raise or lower the loss. *AdamW* adjusts each weight using a running
+average of its recent gradients and also shrinks weights slightly each step (*weight decay*), which
+discourages overly complicated solutions. The *learning rate* sets the step size.
+
+**In our project:** Cross-entropy on two outputs, AdamW, learning rate 0.001 for the scratch CNN and
+0.0001 when fine-tuning ResNet18 (`configs/`).
+
+**Follow-up you might get:** *Why a smaller learning rate for ResNet18?* Its weights already encode
+useful features; large steps would destroy them.
+
+*Status: draft*
+
+### Q: What is overfitting and how do we guard against it?
+
+**Short answer:** Overfitting is memorising the training images instead of learning what generalises.
+We watch performance on validation images the model never trains on, and keep the version that did
+best there.
+
+**In our project:** After every epoch we measure validation macro-F1. The best epoch's weights are
+saved as `best.pt`; training stops early if there is no improvement for several epochs. The
+training curves (train vs. validation loss) show the gap.
+
+**Follow-up you might get:** *Then isn't the validation score also optimistic?* Slightly, yes, because
+we chose the best epoch using it. That is exactly why a separate test set exists.
+
+*Status: draft*
+
+### Q: What is special about ResNet18?
+
+**Short answer:** It has "skip connections": each block adds its input back to its output, which
+makes deep networks much easier to train.
+
+**Explanation:** In a plain deep network, the learning signal weakens as it travels back through many
+layers. A skip connection gives it a shortcut. Each block then only has to learn a *correction* to
+what it received (the "residual"), which is where the name comes from. ResNet18 has 18 layers with
+weights and about 11 million parameters.
+
+**In our project:** `ResNet18Classifier` wraps torchvision's ResNet18 (11,177,538 parameters; our
+scratch CNN has 388,834).
+
+*Status: draft*
+
+### Q: What do "freezing" and "fine-tuning" mean?
+
+**Short answer:** Freezing means holding the pretrained layers fixed and training only the new final
+layer. Fine-tuning means then letting all layers adjust, gently.
+
+**Explanation:** The new final layer starts with random numbers. If everything trained at once, its
+large early errors would push big, damaging changes back into the pretrained layers. So we first
+train only the head, then unfreeze and continue with a ten times smaller learning rate.
+
+**In our project:** With the backbone frozen only 1,026 of 11,177,538 parameters train. Stage lengths
+are in `configs/resnet18.yaml`; the epoch that performs best on validation data is kept.
+
+**Follow-up you might get:** *ImageNet has photos of dogs and cars. Why would it help here?* The early
+layers detect generic edges and textures, which also exist in spectrograms. Whether that is enough to
+help is something we measure rather than assume.
+
+*Status: draft*
+
+---
+
+## Part 5 — Measuring results
+
+### Q: Why not just report accuracy?
+
+**Short answer:** Accuracy hides which kind of mistake is being made, and it flatters a model when
+one class is more common.
+
+**Explanation:** About two thirds of our images are drone images. A model that always says "drone"
+would be about 68% accurate and completely useless. So we also report *recall* (of the real drone
+images, how many did we catch), *precision* (of the images we called drone, how many were),
+the *false-positive rate* (how often background raises a false alarm), and *macro-F1*, which averages
+the F1 score of both classes so neither dominates.
+
+**In our project:** `src/drone_rf/evaluate.py`; formulas are checked against a hand-worked example in
+`tests/test_evaluation.py`.
+
+**Follow-up you might get:** *Which error is worse?* It depends on the use. Missing a drone (low
+recall) and constant false alarms (high false-positive rate) cost different things, which is why we
+report both and do not merge them into one number.
+
+*Status: draft*
+
+### Q: How do you read the confusion matrix?
+
+**Short answer:** Rows are the truth, columns are the prediction. The diagonal is correct; the other
+two cells are the two kinds of error.
+
+**In our project:** Order is always `[background_rf, drone_rf]`, so the matrix is
+`[[true negatives, false positives], [false negatives, true positives]]`.
+
+*Status: draft*
+
+### Q: Why do you report results "per group" as well as "per image"?
+
+**Short answer:** Because many images come from the same recording, and counting each one separately
+overstates how much evidence we have.
+
+**Explanation:** If one recording is hard, all of its noise copies tend to be wrong together. Per
+image that looks like many errors; really it is one difficult recording. Per-group results average
+the model's score over a group's images and count the group once. For the same reason our confidence
+intervals come from resampling whole groups (a *group bootstrap*), not individual images.
+
+**In our project:** `aggregate_by_group` and `bootstrap_by_group` in `evaluate.py`.
+
+*Status: draft*
+
+### Q: Why keep blocks of 20 neighbouring samples together in the split?
+
+**Short answer:** Neighbouring sample numbers appear to be consecutive slices of the same longer
+recording, so they are not independent of each other.
+
+**Explanation:** In the label data, the number of bursts in sample N and in sample N+1 is correlated
+for several transmitters, while random pairs are not (VERIFIED, DATASET_AUDIT.md §4). That is the
+signature of one continuous recording cut into pieces. Testing on the slice right after a training
+slice would be easier than testing on a genuinely new recording.
+
+**In our project:** `--block-size 20` in the split command. The dataset has no recording ID, so this
+is a precaution, not a guarantee.
+
+**Follow-up you might get:** *Why 20 and not 100?* Bigger blocks protect more but leave fewer groups.
+With 20, the smallest transmitter classes still have about 40 groups to divide.
+
+*Status: draft · Evidence: VERIFIED (correlation), judgement call (block size)*
+
+### Q: A drone image at −30 dB looks like pure noise. Why is it still labelled "drone"?
+
+**Short answer:** Because the label says what was transmitted, not what is visible. The drone signal
+is in the recording; the added noise just buries it.
+
+**Explanation:** The annotation boxes are identical across all 26 noise versions of a sample
+(VERIFIED). So at very low SNR we are asking the model to find something that may be physically
+undetectable in the image, and accuracy should fall toward a coin flip. If it does not, the model is
+using something other than the bursts, which is one of our confound checks.
+
+**In our project:** See the SNR curves and the hidden-burst test in
+`docs/CONFOUNDS_AND_LIMITATIONS.md`.
+
+*Status: draft · Evidence: VERIFIED (labels identical across SNR)*
