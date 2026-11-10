@@ -1,0 +1,19 @@
+# SYNTHETIC smoke run. Proves the code runs; the numbers mean nothing scientifically.
+# Prepare with:
+#   python -m drone_rf.cli make-synthetic-fixture --output data/fixtures
+#   python -m drone_rf.cli audit --dataset-dir data/fixtures --out data/fixtures/manifest.csv --summary-dir data/fixtures/audit
+#   python -m drone_rf.cli split --manifest data/fixtures/manifest.csv --out data/fixtures/splits.csv
+run_name: smoke_synthetic
+seed: 0
+output_dir: runs/smoke
+data:
+  splits_csv: data/fixtures/splits.csv
+  image_dir: data/fixtures
+  size: 64
+model:
+  name: scratch_cnn
+  widths: [8, 16, 32]
+train:
+  batch_size: 16
+  epochs: 3
+  patience: 0

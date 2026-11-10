@@ -1,7 +1,5 @@
-# Data, archives and anything derived from the 101 GB dataset — never commit
-data/raw/
-data/selected/
-data/fixtures/
+# Data, archives and anything derived from the 101 GB dataset: never commit
+data/
 *.tar
 *.tar.part
 

@@ -1,0 +1,8 @@
+class_tag,n_source_samples,min_sample_id,max_sample_id,samples_fully_usable,samples_fully_quarantined,samples_partly_quarantined
+labnoise,3942,8872,12813,3942,0,0
+target0,1280,0,1279,1065,215,0
+target1,3472,1280,4751,3434,38,0
+target2,801,4752,5552,801,0,0
+target3,801,5553,6353,770,31,0
+target4,855,8017,8871,855,0,0
+target5,1663,6354,8016,1637,26,0

@@ -1,0 +1,49 @@
+{
+  "n_images": 333164,
+  "n_label_values": {
+    "1": 222612,
+    "0": 102492,
+    "quarantine": 8060
+  },
+  "n_source_samples": 12814,
+  "snr_levels": [
+    -30,
+    -28,
+    -26,
+    -24,
+    -22,
+    -20,
+    -18,
+    -16,
+    -14,
+    -12,
+    -10,
+    -8,
+    -6,
+    -4,
+    -2,
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20
+  ],
+  "n_problems": 0,
+  "mode": "label_index_from_tail",
+  "source": "https://zenodo.org/records/21428081/files/LocalisingDroneRFEmissionsInSpectrograms.tar?download=1",
+  "archive_size_bytes": 101077473280,
+  "label_region_start": 100792909312,
+  "label_region_bytes": 284563968,
+  "bytes_fetched": 285212672,
+  "n_label_files": 333164,
+  "other_members_in_region": [
+    "LocalisingDroneRFEmissionsInSpectrograms/data.txt"
+  ],
+  "n_duplicate_members": 0
+}
