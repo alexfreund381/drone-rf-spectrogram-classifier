@@ -1,0 +1,33 @@
+# Data, archives and anything derived from the 101 GB dataset — never commit
+data/raw/
+data/selected/
+data/fixtures/
+*.tar
+*.tar.part
+
+# Training outputs
+runs/
+checkpoints/
+*.pt
+*.pth
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+build/
+dist/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local Claude Code settings
+.claude/settings.local.json
