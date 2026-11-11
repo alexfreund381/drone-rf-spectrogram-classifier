@@ -3,8 +3,9 @@
 Slide-by-slide source material. Format and rules are in
 [../DOCUMENTATION_GUIDE.md](../DOCUMENTATION_GUIDE.md) §4. Build the deck from this file.
 
-**State on 2026-11-10:** dataset counts and model sizes are filled in from the audit. No experiment
-has been run, so every results slide is still a placeholder. Speakers and time limits are unassigned because the presentation length has not been
+**State on 2026-11-11:** dataset counts, model sizes, and validation results for the baselines and
+the scratch CNN are filled in. ResNet18 and the all-SNR runs have not been trained, and the test set
+is untouched, so the headline-results slides are still placeholders. Speakers and time limits are unassigned because the presentation length has not been
 given to us.
 
 | Section | Slides | Speaker |
@@ -151,12 +152,16 @@ test is not a real test. We split by recording group, freeze the split, and neve
 - Majority class
 - Brightness/energy features + logistic regression
 
-**Visual:** `PLACEHOLDER` baseline vs. CNN bar chart.
+**Numbers (validation, SNR 10–20 dB, 395 images):** majority 0.651 accuracy; brightness (one number)
+0.825; energy (39 numbers) 1.000; scratch CNN 0.997.
+
+**Visual:** TO CREATE: bar chart from `artifacts/results/compare_val_snr10to20.csv`.
 
 **Say:** Before trusting a neural network's score, we check what a rule based only on overall
-brightness achieves.
+brightness achieves. Here, 39 brightness numbers and a straight-line classifier got every clean
+validation image right. Our CNN matched that but did not beat it.
 
-**Evidence:** `PLACEHOLDER — run A0`
+**Evidence:** VALIDATION ONLY, `docs/RESULTS.md` Table 1
 
 ## Slide 8: The two classes were recorded in different places, and that limits our claims
 
@@ -164,18 +169,19 @@ brightness achieves.
 building; the model may partly learn the room.
 
 **On the slide:**
-- The confound
-- How we probed it
-- What we found: `PLACEHOLDER`
+- Background images are brighter than drone images at high SNR (160.9 vs 128.5 at +20 dB)
+- With every drone burst painted over, the CNN still says "drone" 98.8% of the time at high SNR
+- Between −10 and −4 dB hiding the bursts does remove the detections
 
-**Visual:** `PLACEHOLDER` class-wise intensity statistics.
+**Visual:** TO CREATE: brightness-by-SNR lines from `artifacts/results/intensity_by_class_and_snr_train.csv`;
+hidden-burst recall by SNR from `masked_bursts_a1_scratch_cnn_val_all_snr.json`.
 
 **Say:** This is the main limitation of the dataset and we want to state it ourselves. Here is how we
 measured how much it matters.
 
 **Likely question:** Then what is the result worth? → Q&A "Isn't your model just learning which room…"
 
-**Evidence:** `PLACEHOLDER — CONFOUNDS_AND_LIMITATIONS.md`
+**Evidence:** VALIDATION ONLY, scratch CNN only, `docs/RESULTS.md` and `docs/CONFOUNDS_AND_LIMITATIONS.md` §8
 
 *Handoff:* "With a split we trust, here are the two models."
 
@@ -222,9 +228,9 @@ last layer, train the head, then fine-tune.
 **The one thing the audience should remember:** All choices were made on validation data; the test set
 was used once.
 
-**Visual:** `PLACEHOLDER` training/validation curves.
+**Visual:** `artifacts/figures/val_snr10to20/a1_scratch_cnn_curves.png` (scratch CNN; ResNet18 curve `PLACEHOLDER`).
 
-**Evidence:** `PLACEHOLDER — runs/`
+**Evidence:** scratch CNN: 18 epochs, best at epoch 13, 43 minutes on CPU (`docs/RESULTS.md`). ResNet18: `PLACEHOLDER`
 
 *Handoff:* "Here is what happened on recordings the models had never seen."
 
@@ -242,11 +248,16 @@ was used once.
 
 ## Slide 15: Performance as noise increases
 
-**The one thing the audience should remember:** `PLACEHOLDER` (which model degrades more gracefully).
+**The one thing the audience should remember:** `PLACEHOLDER` (which model degrades more gracefully;
+needs ResNet18 and the all-SNR runs).
 
-**Visual:** `PLACEHOLDER` accuracy/recall vs. SNR with per-point denominators.
+**Known so far (scratch CNN trained on clean images only, validation):** finds essentially all drone
+images down to about −4 dB, 77% at −8 dB, almost none at −16 dB and below.
 
-**Evidence:** `PLACEHOLDER — no result yet`
+**Visual:** `artifacts/figures/val_all_snr/snr_accuracy_val.png` and `snr_recall_drone_val.png` (interim;
+52–84 images per SNR level).
+
+**Evidence:** VALIDATION ONLY, `docs/RESULTS.md`; final version `PLACEHOLDER`
 
 ## Slide 16: Failure cases
 

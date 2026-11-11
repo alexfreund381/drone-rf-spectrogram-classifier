@@ -2,7 +2,7 @@
 
 **Working title:** Drone Radio-Frequency Signal Classification from Spectrograms Using Convolutional Neural Networks
 **Course:** Intro to AI main project (computer vision / CNN option, team of 3–4)
-**Last updated:** 2026-11-10
+**Last updated:** 2026-11-11
 
 This is the single document every team member should read first. It covers what we are building, the
 dataset, the software architecture, the testing strategy, the experiments, and who can work on what.
@@ -16,6 +16,7 @@ Companion documents:
 | [DATASET_AUDIT.md](DATASET_AUDIT.md) | Measured counts and label-quality findings |
 | [SPLIT_PROTOCOL.md](SPLIT_PROTOCOL.md) | The frozen train/validation/test split and leak checks |
 | [DOWNLOAD_AND_STORAGE.md](DOWNLOAD_AND_STORAGE.md) | How to get the data and what has been downloaded |
+| [RESULTS.md](RESULTS.md) | Measured results so far (validation only) |
 | [CONFOUNDS_AND_LIMITATIONS.md](CONFOUNDS_AND_LIMITATIONS.md) | What the results can and cannot show |
 | [technical/](technical/) | One page per pipeline stage |
 
@@ -63,7 +64,7 @@ seven-class variant. These never replace the binary deliverable.
 
 ---
 
-## 2. Current status (2026-11-10)
+## 2. Current status (2026-11-11)
 
 | Item | Status |
 |---|---|
@@ -76,7 +77,10 @@ seven-class variant. These never replace the binary deliverable.
 | Images on disk | Pilot sample: 10,407 images (3.2 GB of the 101 GB archive), 7,107 distinct source samples |
 | Full 101 GB archive | Not downloaded |
 | Experiment configs (A1, A2, B1, C1, C1b) | Written in `configs/` |
-| **Baselines, trained models, results** | **None yet. No real training run has been made and no accuracy number exists.** |
+| Baselines (A0) and scratch CNN (A1) | **Run on real images; validation results in [RESULTS.md](RESULTS.md)** |
+| Pretrained ResNet18 (B1), augmentation (A2), all-SNR training (C1, C1b) | **Not run** |
+| Test split | **Untouched** |
+| Main finding so far | At SNR ≥ 0 dB a 39-number brightness baseline separates the classes perfectly; the CNN does not beat it there and ignores the drone bursts at high SNR. See RESULTS.md |
 | CI workflow | Written (`.github/workflows/ci.yml`); its result on GitHub has not been checked |
 | Deadline, grading rubric, presentation length, workstream owners | UNKNOWN — the team must add them |
 
@@ -91,9 +95,9 @@ The exact grading rubric and the deadline have not been given to us. Do not inve
 | 1 | Professor approves dataset/task | Approved; reported by the team on 2026-11-10 | — | Done |
 | 2 | Interesting real-world dataset; ≥100 observations per class; ~5,000 images preferred | 8,562 drone and 3,942 background source samples (not counting noise copies) | `docs/DATASET_AUDIT.md` §2 | Done (VERIFIED) |
 | 3 | Dataset described: URL, download link, size, shape, class counts, targets, what is predicted | Audit document | `docs/DATASET_AUDIT.md` | Done |
-| 4 | First network built from scratch, no pretrained weights | `ScratchCNN` in `models.py`, run A1 | `runs/`, `docs/RESULTS.md` | Code done; **not trained yet** |
+| 4 | First network built from scratch, no pretrained weights | `ScratchCNN` in `models.py`, run A1 | `docs/RESULTS.md` | Trained (validation results only) |
 | 5 | Second model from a pretrained network; choose fine-tuning epochs | ResNet18 (ImageNet), two-stage fine-tune, early stopping on validation | `runs/`, `docs/RESULTS.md` | Code done, weights verified; **not trained yet** |
-| 6 | Train / validation / test split; tune hyperparameters and augmentation; record experiments; analyze errors | Group-safe frozen split; experiment matrix (§7); error gallery | `docs/SPLIT_PROTOCOL.md`, `runs/` | Split done; experiments **not run yet** |
+| 6 | Train / validation / test split; tune hyperparameters and augmentation; record experiments; analyze errors | Group-safe frozen split; experiment matrix (§7); error gallery | `docs/SPLIT_PROTOCOL.md`, `docs/RESULTS.md` | Split done; A0 and A1 recorded; **no tuning, augmentation or error gallery yet** |
 | 7 | Runnable prototype and team presentation; everyone can explain decisions | CLI + docs + Q&A + presentation notes | repo, `docs/qa/`, `docs/presentation/` | Prototype runs; presentation outline only |
 
 AI assistance is permitted (Level 5), but every team member must be able to explain the code and the
@@ -436,8 +440,10 @@ Measured on this machine at 224×224, batch size 32 (2026-11-10, while a downloa
 What that means for the planned runs: one epoch over the 1,616 high-SNR training images takes about
 one minute for the scratch CNN and about a minute and a half for ResNet18. One epoch over all 7,195
 training images takes about four minutes (scratch CNN) or six minutes (ResNet18). Epoch budgets in
-`configs/` were set with these numbers so each run should finish in roughly an hour or less; actual
-run times will be recorded in each run's `meta.json`.
+`configs/` were set with these numbers. **Actual speed in the first real run (A1, 2026-11-11) was
+slower: about 143 seconds per epoch, roughly 11 images/s, 43 minutes for 18 epochs.** Plan on about
+2.5 minutes per epoch for the scratch CNN on the high-SNR subset, and several times that for ResNet18
+or all-SNR training. Run times are recorded in each run's `meta.json`.
 
 The code runs unchanged on CUDA. If a teammate has an NVIDIA GPU, or we use Google Colab, larger
 sweeps go there. Dependencies and minimum versions are in `pyproject.toml`; this machine uses
@@ -549,15 +555,17 @@ fixture deliberately includes the awkward cases:
 
 | Run | Model | Training data | What changes | Config | Status |
 |---|---|---|---|---|---|
-| A0 | Majority, brightness and energy baselines | SNR 10–20 dB | reference point | `binary_cnn.yaml` via `baselines` | not run |
-| A1 | Scratch CNN | SNR 10–20 dB | no augmentation | `binary_cnn.yaml` | not run |
+| A0 | Majority, brightness and energy baselines | SNR 10–20 dB | reference point | `binary_cnn.yaml` via `baselines` | **done** (validation) |
+| A1 | Scratch CNN | SNR 10–20 dB | no augmentation | `binary_cnn.yaml` | **done** (validation) |
 | A2 | Scratch CNN | same as A1 | one augmentation bundle | `binary_cnn_aug.yaml` | not run |
 | B1 | Pretrained ResNet18 | same as A1 | head training, then fine-tuning | `resnet18.yaml` | not run |
 | C1 | Scratch CNN | all SNR levels | noise robustness | `noise_robustness.yaml` | not run |
 | C1b | Pretrained ResNet18 | all SNR levels | noise robustness | `noise_robustness_resnet18.yaml` | not run |
 | C2 | Better of A/B | same as its base run | one of: learning rate, weight decay, input size | to be written | optional |
 
-Priority if time is short: A0, A1, B1 first; then C1; then A2 and C1b.
+Priority for what remains: B1, then C1 and C1b. The A0/A1 results show that high-SNR scores are
+saturated by a trivial baseline, so the all-SNR runs (C1, C1b) are where the two models can actually
+be compared. A2 matters less.
 
 All runs share one split file and one test set. Only one factor changes between compared runs.
 
@@ -591,9 +599,9 @@ No claims of statistical significance from correlated SNR copies. No comparison 
 | 0 Setup | Repo, plan, docs guide, environment facts, source probe | **Done** |
 | 1 Data metadata | Parsers, synthetic fixtures, TAR/range tools, label index, manifest, audit | **Done**; `DATASET_AUDIT.md` has exact counts |
 | 2 Splits and preprocessing | Group-safe split, image sample, transforms | **Done**: split frozen, 10,407 images on disk. Preview gallery not made yet |
-| 3 Scratch CNN | Model, dataset, training loop, metrics, A0 and A1 | Code and tests done. **A0 and A1 not run** |
+| 3 Scratch CNN | Model, dataset, training loop, metrics, A0 and A1 | **Done**: A0 and A1 run, validation results in RESULTS.md |
 | 4 ResNet18 | Pretrained weights verified, two-stage fine-tune, B1 | Code and tests done, weights verified. **B1 not run** |
-| 5 Robustness and analysis | A2, C1, optional C2, test-set evaluation, plots, confound analysis | Tools written. **Nothing run** |
+| 5 Robustness and analysis | A2, C1, optional C2, test-set evaluation, plots, confound analysis | Confound checks and SNR plots done for A1. A2, C1, C1b and the test evaluation **not run** |
 | 6 Presentation and release | Report, Q&A complete, slides built from notes, demo | Q&A has 25 draft entries; presentation is an outline with placeholders |
 
 The professor has approved the dataset and task (reported by the team on 2026-11-10).
@@ -641,19 +649,21 @@ With three people, merge C and D's model work and move evaluation to B.
 
 ## 11. Immediate next steps
 
-1. Run the baselines and the two required models on the pilot sample (each command writes to `runs/`):
+1. Train the pretrained ResNet18 on the same data as A1, then evaluate it the same way:
    ```
-   python -m drone_rf.cli baselines --config configs/binary_cnn.yaml --split val
-   python -m drone_rf.cli train --config configs/binary_cnn.yaml
    python -m drone_rf.cli train --config configs/resnet18.yaml
+   python -m drone_rf.cli evaluate --checkpoint runs/b1_resnet18_pretrained/best.pt --split val --all-snr --name val_all_snr
+   python -m drone_rf.cli confound-check --checkpoint runs/b1_resnet18_pretrained/best.pt --split val --all-snr
    ```
-2. Evaluate both checkpoints on validation images at all SNR levels, run `confound-check`, `compare`
-   and `figures`; write `docs/RESULTS.md` from those outputs.
-3. Run C1 (and A2, C1b if time allows). Choose final models using validation results only.
-4. Evaluate the chosen models once on the test split.
-5. Fill the placeholders in the presentation notes; have each Q&A entry reviewed by a teammate.
+2. Train on all SNR levels (`configs/noise_robustness.yaml`, then `noise_robustness_resnet18.yaml`).
+   This is the comparison that matters, because high-SNR scores are saturated by a trivial baseline.
+   Expect these to take a few hours each on this CPU.
+3. Rerun the baselines trained on all SNR levels so the all-SNR CNNs have a fair reference.
+4. Choose final models using validation results only; then evaluate them once on the test split.
+5. Make the error gallery; fill the remaining presentation placeholders; have each Q&A entry reviewed.
 6. Team decisions still open: workstream owners (§9), deadline and rubric, whether to extend the image
-   sample or download the full archive, and whether to try a larger input size.
+   sample (more images per SNR level) or download the full archive, and whether to try a larger input
+   size.
 
 ---
 

@@ -1,8 +1,8 @@
 # Conceptual Q&A
 
 Plain-language questions and answers about the project. Format and rules are in
-[../DOCUMENTATION_GUIDE.md](../DOCUMENTATION_GUIDE.md) §3. No model has been trained on real data yet, so there are no entries about results; they are added
-once runs exist.
+[../DOCUMENTATION_GUIDE.md](../DOCUMENTATION_GUIDE.md) §3. Results quoted here are validation results for the baselines and the scratch CNN only; ResNet18 has
+not been trained and the test set has not been used.
 
 All entries below are **drafts** and need review by a teammate.
 
@@ -188,16 +188,18 @@ outside signals). Background was recorded in a university building. So every dro
 one environment and every background image from another. A model could separate them using the
 general look of the recording rather than the drone signal. This is called a confound.
 
-**In our project:** We compare the CNN against a very simple baseline that only uses overall
-brightness and energy profiles. If the simple baseline does as well, the task is easy for the wrong
-reason. We also look at accuracy across SNR and, where possible, at what happens when the drone bursts
-are masked out. See PROJECT_PLAN.md §4.10.
+**In our project:** We tested this, and at high SNR the answer is largely yes. A baseline using only
+39 brightness numbers classified every clean validation image correctly, and when we painted over
+every drone burst the CNN still said "drone" for 98.8% of drone images. Background images are simply
+brighter than drone images at high SNR. Between about −10 and −4 dB the picture changes: there the
+CNN finds more drone images than the brightness baseline, and hiding the bursts removes most of its
+detections. (Validation data, scratch CNN only so far; `docs/RESULTS.md`.)
 
 **Follow-up you might get:** *Then what is your result worth?* It shows how well these methods
 separate these recordings and how the two models compare under noise. It does not show that the system
 would work on drone signals recorded in a real, busy radio environment.
 
-*Status: draft · Evidence: CLAIMED (recording locations); analysis not yet run*
+*Status: draft · Evidence: CLAIMED (recording locations); VERIFIED on validation data for run A1*
 
 ### Q: Why build a simple baseline when we have neural networks?
 
@@ -207,7 +209,10 @@ would work on drone signals recorded in a real, busy radio environment.
 not impressive. If a three-number brightness rule reaches 99%, a CNN at 99% has not proved it learned
 signal patterns. Baselines put the headline number in context.
 
-**In our project:** Run A0: majority-class and energy baselines on the same split as the CNNs.
+**In our project:** Run A0. On clean validation images (SNR 10–20 dB): always guessing "drone" gives
+0.651 accuracy, one brightness number gives 0.825, 39 brightness numbers give 1.000, and our scratch
+CNN gives 0.997. Without the baseline we would have presented 0.997 as a success; with it, we know
+the clean-image task is trivial on this dataset (`docs/RESULTS.md`).
 
 *Status: draft · Evidence: n/a*
 

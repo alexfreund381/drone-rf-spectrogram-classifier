@@ -3,9 +3,9 @@
 What could make our results look better than they are, how we check for it, and what the project
 cannot show regardless.
 
-**State on 2026-11-10:** the checks are implemented and tested on synthetic fixtures. **None has been
-run on a trained model yet**, so this document has no findings, only the plan and the facts already
-measured from labels and a first look at pixels.
+**State on 2026-11-11:** the checks have been run for the baselines and the scratch CNN (run A1) on
+validation data. Findings are in section 8. They have not been run for ResNet18 or for models trained
+on all SNR levels, because those models do not exist yet.
 
 ## 1. The recording-environment confound
 
@@ -19,8 +19,8 @@ signals) without learning what a drone signal looks like.
 - Two images viewed by eye at +20 dB: the drone image is a smooth background with a few thin bursts;
   the background image is filled with many narrow bursts. The classes look different as a whole, not
   only where the annotated bursts are.
-- Four images measured: at +20 dB the drone image's mean pixel value was 146.5 and the background
-  image's 121.6; at −30 dB both were about 211. This is four images, not a result.
+- Measured over the 7,195 training images of the sample: background images are brighter than drone
+  images at high SNR (160.9 against 128.5 at +20 dB), and the gap closes as noise is added (section 8).
 
 **How we will measure it.**
 
@@ -89,6 +89,30 @@ The boxes come from the authors' energy-based segmentation, not from people (CLA
 - Comparability with the source paper: it reports object-detection mAP; we report image-level
   classification metrics.
 
-## 8. Findings
+## 8. Findings so far (validation data, baselines and scratch CNN A1)
 
-*To be written from `artifacts/confounds/` and `runs/` after the first training runs.*
+Numbers and source files are in [RESULTS.md](RESULTS.md).
+
+1. **The confound is real and large at high SNR.** A linear classifier on 39 global brightness numbers
+   scores 1.000 accuracy on the 395 validation images at SNR 10–20 dB. No learned shape is needed.
+2. **The classes differ in plain brightness.** At +20 dB background images average 160.9 and drone
+   images 128.5 on a 0–255 scale. The gap shrinks as noise is added and is gone by about −20 dB.
+   (An earlier note in this document, based on four images, had the direction the other way round;
+   the table over 7,195 training images supersedes it.)
+3. **At high SNR the scratch CNN does not use the drone bursts.** With every annotated burst painted
+   over, it still calls 98.8% of drone images "drone" (99.6% unmasked).
+4. **In the middle SNR range it does use them.** Between −10 and −4 dB, hiding the bursts cuts drone
+   recall sharply (for example from 0.77 to 0.06 at −8 dB), and in that range the CNN finds more drone
+   images than the brightness baseline.
+5. **Below about −16 dB nothing works.** Both the CNN and the baseline call almost everything
+   "background". This model was trained only on SNR 10–20 dB, so this is also an out-of-distribution
+   failure, not only a physical limit.
+
+**What this means for the project.** High-SNR accuracy is not a meaningful headline number on this
+dataset. The comparison between the scratch CNN and ResNet18 should be made on models trained across
+all SNR levels and judged mainly in the range where brightness alone fails, together with the
+hidden-burst test.
+
+**Not yet checked:** ResNet18; models trained on all SNR levels; whether the brightness gap comes from
+the recording environment, the receiver settings, or the image scaling used by the dataset authors
+(we cannot tell from the images alone).

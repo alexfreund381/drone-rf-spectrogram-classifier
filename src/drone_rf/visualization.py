@@ -24,7 +24,7 @@ from .sources import CLASS_NAMES  # noqa: E402
 
 def _finish(fig, out: str | Path, note: str = "") -> Path:
     if note:
-        fig.text(0.995, 0.005, note, ha="right", va="bottom", fontsize=7, color="gray")
+        fig.text(0.995, -0.01, note, ha="right", va="top", fontsize=7, color="gray")
     out = Path(out)
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=130, bbox_inches="tight")

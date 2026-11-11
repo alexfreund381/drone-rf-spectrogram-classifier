@@ -146,10 +146,11 @@ Per split:
 Restricted to SNR 10–20 dB (the baseline training condition): train 531 background / 1,085 drone,
 val 138 / 257, test 117 / 265 images.
 
-**First look at the pixels (four images, not a study).** At +20 dB a FutabaT14 image had mean pixel
-value 146.5 and a background image 121.6; at −30 dB both were about 211. So overall brightness rises
-strongly as SNR falls, and at high SNR the two classes may differ in plain brightness. Whether
-brightness alone separates the classes is what the baselines (run A0) will measure. Two images viewed
+**Brightness.** Over the 7,195 training images of the sample, background images are brighter than
+drone images at high SNR (mean pixel value 160.9 against 128.5 at +20 dB), all images get brighter as
+SNR falls, and the class gap closes by about −20 dB (`artifacts/results/intensity_by_class_and_snr_train.csv`).
+A simple brightness-based classifier separates the classes perfectly at high SNR; see RESULTS.md.
+Two images viewed
 by eye: the drone image shows a few thin bright bursts on a smooth background; the background image is
 covered with many narrow Wi-Fi/Bluetooth bursts. A systematic visual audit of labelled images has not
 been done yet.

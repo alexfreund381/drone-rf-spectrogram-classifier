@@ -1,0 +1,172 @@
+{
+  "checkpoint": "runs/a1_scratch_cnn/best.pt",
+  "split": "val",
+  "snr_levels": "all",
+  "n_drone_images": 1143,
+  "n_drone_groups": 68,
+  "n_background_images": 528,
+  "approx_fraction_of_pixels_changed": 0.013123900109584516,
+  "drone_recall_original": 0.6097987751531059,
+  "drone_recall_bursts_hidden": 0.5048118985126859,
+  "mean_p_drone_original": 0.6096083521842957,
+  "mean_p_drone_bursts_hidden": 0.4913872480392456,
+  "background_false_positive_rate": 0.06439393939393939,
+  "per_snr": [
+    {
+      "snr_db": -30,
+      "n_drone_images": 50,
+      "recall_original": 0.0,
+      "recall_bursts_hidden": 0.0
+    },
+    {
+      "snr_db": -28,
+      "n_drone_images": 37,
+      "recall_original": 0.0,
+      "recall_bursts_hidden": 0.0
+    },
+    {
+      "snr_db": -26,
+      "n_drone_images": 46,
+      "recall_original": 0.0,
+      "recall_bursts_hidden": 0.0
+    },
+    {
+      "snr_db": -24,
+      "n_drone_images": 42,
+      "recall_original": 0.0,
+      "recall_bursts_hidden": 0.0
+    },
+    {
+      "snr_db": -22,
+      "n_drone_images": 44,
+      "recall_original": 0.0,
+      "recall_bursts_hidden": 0.0
+    },
+    {
+      "snr_db": -20,
+      "n_drone_images": 46,
+      "recall_original": 0.021739130434782608,
+      "recall_bursts_hidden": 0.0
+    },
+    {
+      "snr_db": -18,
+      "n_drone_images": 43,
+      "recall_original": 0.0,
+      "recall_bursts_hidden": 0.0
+    },
+    {
+      "snr_db": -16,
+      "n_drone_images": 43,
+      "recall_original": 0.023255813953488372,
+      "recall_bursts_hidden": 0.0
+    },
+    {
+      "snr_db": -14,
+      "n_drone_images": 36,
+      "recall_original": 0.16666666666666666,
+      "recall_bursts_hidden": 0.0
+    },
+    {
+      "snr_db": -12,
+      "n_drone_images": 37,
+      "recall_original": 0.1891891891891892,
+      "recall_bursts_hidden": 0.05405405405405406
+    },
+    {
+      "snr_db": -10,
+      "n_drone_images": 37,
+      "recall_original": 0.40540540540540543,
+      "recall_bursts_hidden": 0.02702702702702703
+    },
+    {
+      "snr_db": -8,
+      "n_drone_images": 48,
+      "recall_original": 0.7708333333333334,
+      "recall_bursts_hidden": 0.0625
+    },
+    {
+      "snr_db": -6,
+      "n_drone_images": 46,
+      "recall_original": 0.9565217391304348,
+      "recall_bursts_hidden": 0.30434782608695654
+    },
+    {
+      "snr_db": -4,
+      "n_drone_images": 53,
+      "recall_original": 1.0,
+      "recall_bursts_hidden": 0.7169811320754716
+    },
+    {
+      "snr_db": -2,
+      "n_drone_images": 52,
+      "recall_original": 1.0,
+      "recall_bursts_hidden": 0.8653846153846154
+    },
+    {
+      "snr_db": 0,
+      "n_drone_images": 53,
+      "recall_original": 1.0,
+      "recall_bursts_hidden": 0.9245283018867925
+    },
+    {
+      "snr_db": 2,
+      "n_drone_images": 31,
+      "recall_original": 1.0,
+      "recall_bursts_hidden": 0.967741935483871
+    },
+    {
+      "snr_db": 4,
+      "n_drone_images": 36,
+      "recall_original": 1.0,
+      "recall_bursts_hidden": 0.9722222222222222
+    },
+    {
+      "snr_db": 6,
+      "n_drone_images": 50,
+      "recall_original": 1.0,
+      "recall_bursts_hidden": 1.0
+    },
+    {
+      "snr_db": 8,
+      "n_drone_images": 56,
+      "recall_original": 0.9821428571428571,
+      "recall_bursts_hidden": 1.0
+    },
+    {
+      "snr_db": 10,
+      "n_drone_images": 39,
+      "recall_original": 1.0,
+      "recall_bursts_hidden": 1.0
+    },
+    {
+      "snr_db": 12,
+      "n_drone_images": 38,
+      "recall_original": 0.9736842105263158,
+      "recall_bursts_hidden": 0.9736842105263158
+    },
+    {
+      "snr_db": 14,
+      "n_drone_images": 46,
+      "recall_original": 1.0,
+      "recall_bursts_hidden": 0.9782608695652174
+    },
+    {
+      "snr_db": 16,
+      "n_drone_images": 59,
+      "recall_original": 1.0,
+      "recall_bursts_hidden": 1.0
+    },
+    {
+      "snr_db": 18,
+      "n_drone_images": 45,
+      "recall_original": 1.0,
+      "recall_bursts_hidden": 1.0
+    },
+    {
+      "snr_db": 20,
+      "n_drone_images": 30,
+      "recall_original": 1.0,
+      "recall_bursts_hidden": 0.9666666666666667
+    }
+  ]
+}
