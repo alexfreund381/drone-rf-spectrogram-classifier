@@ -4,8 +4,9 @@ Slide-by-slide source material. Format and rules are in
 [../DOCUMENTATION_GUIDE.md](../DOCUMENTATION_GUIDE.md) §4. Build the deck from this file.
 
 **State on 2026-11-12:** dataset counts, model sizes, and validation results for the baselines, the
-scratch CNN and the pretrained ResNet18 (all trained on clean images) are filled in. The all-SNR runs
-are not finished and the test set is untouched, so the headline-results slides are still placeholders. Speakers and time limits are unassigned because the presentation length has not been
+scratch CNN and the pretrained ResNet18 (all trained on clean images) are filled in. The scratch CNN trained on all SNR levels (C1) is also filled in. The ResNet18
+equivalent is not trained and the test set is untouched, so the final comparison slides are still
+placeholders. Speakers and time limits are unassigned because the presentation length has not been
 given to us.
 
 | Section | Slides | Speaker |
@@ -252,8 +253,14 @@ was used once.
 **The one thing the audience should remember:** `PLACEHOLDER` (which model degrades more gracefully;
 needs ResNet18 and the all-SNR runs).
 
-**Known so far (scratch CNN trained on clean images only, validation):** finds essentially all drone
-images down to about −4 dB, 77% at −8 dB, almost none at −16 dB and below.
+**Known so far (validation):**
+- Scratch CNN trained on clean images only: finds essentially all drone images down to about −4 dB,
+  77% at −8 dB, almost none at −16 dB and below. Overall accuracy 0.713.
+- The same network trained on all SNR levels: overall accuracy 0.962; drone recall 0.97–1.00 from
+  −22 dB upward, 0.56 at −30 dB.
+- A 39-number brightness baseline trained the same way: 0.911.
+- Suggested message for the slide: *what you train on mattered far more than which network you used.*
+  Confirm once ResNet18 has been trained on all SNR levels.
 
 **Visual:** `artifacts/figures/val_all_snr/snr_accuracy_val.png` and `snr_recall_drone_val.png` (interim;
 52–84 images per SNR level).

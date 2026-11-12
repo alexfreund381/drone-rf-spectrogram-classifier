@@ -78,9 +78,10 @@ seven-class variant. These never replace the binary deliverable.
 | Full 101 GB archive | Not downloaded |
 | Experiment configs (A1, A2, B1, C1, C1b) | Written in `configs/` |
 | Baselines (A0), scratch CNN (A1), pretrained ResNet18 (B1) | **Run on real images; validation results in [RESULTS.md](RESULTS.md)** |
-| All-SNR training (C1, C1b), augmentation (A2) | **Not finished** |
+| Scratch CNN trained on all SNR levels (C1) | **Run; 0.962 validation accuracy over all SNR levels** |
+| ResNet18 trained on all SNR levels (C1b), augmentation (A2) | **Not run** |
 | Test split | **Untouched** |
-| Main findings so far | At SNR ≥ 0 dB a 39-number brightness baseline separates the classes perfectly; neither network beats it there, and both ignore the drone bursts at high SNR. Trained on clean images only, the pretrained ResNet18 is no better on noisy images than the scratch CNN. See RESULTS.md |
+| Main findings so far | At SNR ≥ 0 dB a 39-number brightness baseline separates the classes perfectly; neither network beats it there, and both ignore the drone bursts at high SNR. Trained on clean images only, the pretrained ResNet18 is no better on noisy images than the scratch CNN. Trained on all SNR levels, the scratch CNN reaches 0.962 validation accuracy, beats the like-for-like brightness baseline (0.911), and depends on the drone bursts. See RESULTS.md |
 | CI workflow | Written (`.github/workflows/ci.yml`); its result on GitHub has not been checked |
 | Deadline, grading rubric, presentation length, workstream owners | UNKNOWN — the team must add them |
 
@@ -559,11 +560,11 @@ fixture deliberately includes the awkward cases:
 | A1 | Scratch CNN | SNR 10–20 dB | no augmentation | `binary_cnn.yaml` | **done** (validation) |
 | A2 | Scratch CNN | same as A1 | one augmentation bundle | `binary_cnn_aug.yaml` | not run |
 | B1 | Pretrained ResNet18 | same as A1 | head training, then fine-tuning | `resnet18.yaml` | **done** (validation) |
-| C1 | Scratch CNN | all SNR levels | noise robustness | `noise_robustness.yaml` | not run |
+| C1 | Scratch CNN | all SNR levels | noise robustness | `noise_robustness.yaml` | **done** (validation) |
 | C1b | Pretrained ResNet18 | all SNR levels | noise robustness | `noise_robustness_resnet18.yaml` | not run |
 | C2 | Better of A/B | same as its base run | one of: learning rate, weight decay, input size | to be written | optional |
 
-Priority for what remains: C1 and C1b. The A0/A1 results show that high-SNR scores are
+Priority for what remains: C1b, then the hidden-burst control. The A0/A1 results show that high-SNR scores are
 saturated by a trivial baseline, so the all-SNR runs (C1, C1b) are where the two models can actually
 be compared. A2 matters less.
 
@@ -601,7 +602,7 @@ No claims of statistical significance from correlated SNR copies. No comparison 
 | 2 Splits and preprocessing | Group-safe split, image sample, transforms | **Done**: split frozen, 10,407 images on disk. Preview gallery not made yet |
 | 3 Scratch CNN | Model, dataset, training loop, metrics, A0 and A1 | **Done**: A0 and A1 run, validation results in RESULTS.md |
 | 4 ResNet18 | Pretrained weights verified, two-stage fine-tune, B1 | **Done**: B1 run, validation results in RESULTS.md |
-| 5 Robustness and analysis | A2, C1, optional C2, test-set evaluation, plots, confound analysis | Confound checks and SNR plots done for A1. A2, C1, C1b and the test evaluation **not run** |
+| 5 Robustness and analysis | A2, C1, optional C2, test-set evaluation, plots, confound analysis | C1 done; confound checks and SNR plots done for A1, B1, C1. C1b, A2 and the test evaluation **not run** |
 | 6 Presentation and release | Report, Q&A complete, slides built from notes, demo | Q&A has 25 draft entries; presentation is an outline with placeholders |
 
 The professor has approved the dataset and task (reported by the team on 2026-11-10).
@@ -650,10 +651,11 @@ With three people, merge C and D's model work and move evaluation to B.
 ## 11. Immediate next steps
 
 1. Done: baselines, scratch CNN and pretrained ResNet18 on clean images (RESULTS.md).
-2. Train on all SNR levels (`configs/noise_robustness.yaml`, then `noise_robustness_resnet18.yaml`).
-   This is the comparison that matters, because high-SNR scores are saturated by a trivial baseline.
-   Expect these to take a few hours each on this CPU.
-3. Rerun the baselines trained on all SNR levels so the all-SNR CNNs have a fair reference.
+2. Train the pretrained ResNet18 on all SNR levels, so the two required models are compared under the
+   condition that matters (`python -m drone_rf.cli train --config configs/noise_robustness_resnet18.yaml`).
+   Expect several hours on this CPU; keep the laptop plugged in and awake.
+3. Add a control to the hidden-burst test (paint over same-sized patches away from the bursts).
+   Consider a longer C1 run, since it was still improving at its last epoch.
 4. Choose final models using validation results only; then evaluate them once on the test split.
 5. Make the error gallery; fill the remaining presentation placeholders; have each Q&A entry reviewed.
 6. Team decisions still open: workstream owners (§9), deadline and rubric, whether to extend the image

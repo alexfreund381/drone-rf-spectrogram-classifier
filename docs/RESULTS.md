@@ -1,15 +1,21 @@
 # Results
 
 **State on 2026-11-12: validation results for the baselines (A0), the scratch CNN (A1) and the
-pretrained ResNet18 (B1), all trained on clean images (SNR 10–20 dB) only.** Models trained on all SNR
-levels are not finished. **The test split has not been touched.** Everything here may change the choice of models; nothing here is a final result.
+pretrained ResNet18 (B1) trained on clean images (SNR 10–20 dB), and for the scratch CNN trained on
+all SNR levels (C1).** A ResNet18 trained on all SNR levels (C1b) has not been run.
+**The test split has not been touched.**
+
+**Short version.** On clean images everything, including a 39-number brightness baseline, is
+essentially perfect, so clean images cannot rank the models. Trained on all SNR levels, the scratch
+CNN reaches 0.962 validation accuracy across all 26 levels and beats the same baseline trained the
+same way (0.911). See "Table 3". Everything here may change the choice of models; nothing here is a final result.
 
 All numbers are from real images (the 10,407-image pilot sample), frozen split `ddfcbce03785a3af`.
 
 | Source file | Contents |
 |---|---|
 | `artifacts/results/compare_val_snr10to20.csv` | Table 1 |
-| `artifacts/results/compare_val_all_snr.csv` | Table 2 |
+| `artifacts/results/compare_val_all_snr.csv` | Tables 2 and 3 |
 | `artifacts/results/masked_bursts_<run>_val_*.json` | Hidden-burst test |
 | `artifacts/results/intensity_by_class_and_snr_train.csv` | Brightness by class and SNR |
 | `artifacts/figures/val_snr10to20/`, `artifacts/figures/val_all_snr/` | Curves, confusion matrices, SNR plots |
@@ -185,6 +191,69 @@ to 0.505), which suggests it leans on the bursts less than the scratch CNN does.
 Caveats: the boxes are automatic and may not cover all of a burst's energy; the replaced pixels are
 not a perfect imitation of the background; and the model was never trained on images below 10 dB.
 
+## Table 3 — Trained on all SNR levels, validated on all SNR levels (run C1)
+
+Run C1 is the scratch CNN from A1 with identical architecture and settings, trained on all 7,195
+training images (2,273 background, 4,922 drone) at whatever SNR level each has. 10 epochs (the
+maximum allowed), best at epoch 10, so it may not have finished improving. Validation macro-F1 by
+epoch: 0.712, 0.820, 0.870, 0.638, 0.868, 0.944, 0.935, 0.953, 0.952, 0.957. The run took 2.9 hours of
+clock time, part of which the laptop spent asleep; awake epochs took about 8 minutes.
+
+The baselines were refitted on the same all-SNR training images so the comparison is like for like
+(`runs/a0_trained_all_snr/`). 1,671 validation images, 98 groups.
+
+| Run | Trained on | Accuracy | Balanced accuracy | Macro-F1 (95% interval) | Drone recall | Drone precision | False-positive rate |
+|---|---|---|---|---|---|---|---|
+| A0 majority | all SNR | 0.684 | 0.500 | 0.406 (0.371–0.436) | 1.000 | 0.684 | 1.000 |
+| A0 brightness | all SNR | 0.684 | 0.501 | 0.408 (0.372–0.440) | 0.999 | 0.684 | 0.998 |
+| A0 energy | all SNR | 0.911 | 0.900 | 0.898 (0.874–0.918) | 0.929 | 0.940 | 0.129 |
+| A1 scratch CNN | SNR 10–20 only | 0.713 | 0.773 | 0.708 (0.649–0.749) | 0.610 | 0.953 | 0.064 |
+| B1 pretrained ResNet18 | SNR 10–20 only | 0.675 | 0.739 | 0.672 (0.614–0.712) | 0.565 | 0.934 | 0.087 |
+| **C1 scratch CNN** | **all SNR** | **0.962** | 0.962 | 0.957 (0.943–0.967) | 0.962 | 0.982 | 0.038 |
+
+C1 confusion matrix `[[508, 20], [43, 1100]]`: 20 false alarms on 528 background images and 43 missed
+drone images out of 1,143. Accuracy interval 0.952–0.971. On the clean validation images alone
+(SNR 10–20 dB, 395 images) C1 scores 0.995 accuracy, `[[138, 0], [2, 255]]`, so training on noisy
+images cost nothing measurable on clean ones.
+
+By SNR level (C1 against the energy baseline trained on all SNR):
+
+| SNR (dB) | Images | C1 accuracy | C1 drone recall | C1 false-positive rate | Energy accuracy | Energy false-positive rate |
+|---|---|---|---|---|---|---|
+| −30 | 74 | 0.65 | 0.56 | 0.17 | 0.49 | 0.17 |
+| −28 | 53 | 0.79 | 0.78 | 0.19 | 0.59 | 0.25 |
+| −26 | 63 | 0.95 | 0.96 | 0.06 | 0.78 | 0.12 |
+| −24 | 60 | 0.90 | 0.91 | 0.11 | 0.90 | 0.11 |
+| −22 | 59 | 0.93 | 0.98 | 0.20 | 0.85 | 0.20 |
+| −20 | 69 | 0.97 | 1.00 | 0.09 | 0.90 | 0.30 |
+| −18 to −2 | 570 | 0.97–1.00 | 0.97–1.00 | 0.00–0.07 | 0.87–0.97 | 0.10–0.40 |
+| 0 to 20 | 723 | 0.98–1.00 | 0.97–1.00 | 0.00 | 0.93–1.00 | 0.00–0.23 |
+
+By transmitter family (C1, share correct): background 0.962, DJI 0.942, FutabaT14 0.949, FutabaT7 0.946,
+Graupner 0.990, Turnigy 0.991, Taranis 0.980.
+
+Hidden-burst test for C1 (all SNR levels, 1,143 drone images): drone recall falls from **0.962 to
+0.444** when the annotated bursts are painted over. By level it falls to 0.19–0.41 between −26 and
+−2 dB and to 0.48–0.80 from 0 dB upward.
+
+**Reading.**
+- Training on all SNR levels fixes most of the failure seen in Table 2: accuracy rises from 0.713 to
+  0.962 with the same network. The only thing that changed is the training data.
+- C1 is better than the like-for-like energy baseline (macro-F1 0.957 against 0.898; the intervals do
+  not overlap). The gain is largest in the −22 to −2 dB range, mostly through fewer false alarms.
+- **The brightness-type baseline is still strong: 0.911 accuracy from 39 global numbers.** Most of what
+  separates the classes is available without recognising any shape, even at low SNR. The CNN adds
+  about five accuracy points on top of that.
+- C1 depends on the drone bursts far more than the clean-trained models did. Hiding them removes more
+  than half of its detections, where A1 and B1 barely noticed at high SNR. This is the first evidence
+  in the project that a model is responding to the drone signal itself.
+- The hidden-burst result has an untested alternative explanation: the painted-over patches might
+  themselves look unusual to the model. A control that paints over patches of the same size *away*
+  from the bursts has not been run yet.
+- At −30 and −28 dB the CNN still finds 56–78% of drone images. We have not established whether the
+  bursts are visible at those levels or whether another cue is being used.
+- Each SNR level has 52–84 images, so single-level numbers are rough.
+
 ## Brightness by class and SNR (training images)
 
 Mean pixel value on a 0–255 scale (`intensity_by_class_and_snr_train.csv`):
@@ -207,8 +276,10 @@ the models stop working.
 - They show that on these recordings, at SNR of 0 dB and above, drone and background images are
   separable by simple global image statistics. That is consistent with the recording-environment
   confound (CONFOUNDS_AND_LIMITATIONS.md) and is **not** evidence of drone-signal recognition.
-- They show that networks trained only on clean images fail on noisy ones, pretrained or not. Whether
-  training on all SNR levels fixes that is runs C1 and C1b, not yet done.
+- They show that networks trained only on clean images fail on noisy ones, pretrained or not, and
+  that training the scratch CNN on all SNR levels largely fixes it (0.713 to 0.962 validation
+  accuracy). The same experiment for ResNet18 (C1b) is not done, so the two required models have not
+  yet been compared under the condition that matters.
 - They do not show that ImageNet pretraining helps on this task. On clean images there is no room to
   help; on noisy images the pretrained model was not better.
 - They suggest the informative comparison between models is in the −12 to 0 dB range.
@@ -217,6 +288,6 @@ the models stop working.
 
 ## Not yet run
 
-C1 and C1b (training on all SNR levels), baselines trained on all SNR levels, A2 (augmentation), a
-randomly initialised ResNet18 (to separate architecture from pretraining), any input-size ablation,
+C1b (pretrained ResNet18 trained on all SNR levels), the control for the hidden-burst test, a longer
+C1 run (it was still improving at its last epoch), A2 (augmentation), a randomly initialised ResNet18 (to separate architecture from pretraining), any input-size ablation,
 the error gallery, and the single final test-set evaluation.

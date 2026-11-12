@@ -4,8 +4,9 @@ What could make our results look better than they are, how we check for it, and 
 cannot show regardless.
 
 **State on 2026-11-12:** the checks have been run for the baselines, the scratch CNN (A1) and the
-pretrained ResNet18 (B1) on validation data. Findings are in section 8. They have not been run for
-models trained on all SNR levels, because those are not finished.
+pretrained ResNet18 (B1) on validation data. Findings are in section 8. They have also been run for the
+scratch CNN trained on all SNR levels (C1), but not for a ResNet18 trained that way, which does not
+exist yet.
 
 ## 1. The recording-environment confound
 
@@ -109,11 +110,20 @@ Numbers and source files are in [RESULTS.md](RESULTS.md).
    "background". This model was trained only on SNR 10–20 dB, so this is also an out-of-distribution
    failure, not only a physical limit.
 
+6. **Trained on all SNR levels, the brightness-type baseline is still strong but the CNN beats it.**
+   39 global numbers reach 0.911 validation accuracy across all SNR levels; the scratch CNN (C1)
+   reaches 0.962, and the uncertainty intervals of their macro-F1 scores do not overlap. So most of
+   the separation is still explainable by global image statistics, and the CNN adds a real but
+   modest amount on top.
+7. **The all-SNR model does respond to the drone bursts.** Painting them over cuts C1's drone recall
+   from 0.962 to 0.444. This has an untested alternative explanation (the painted patches may look
+   odd to the model); the control experiment is listed in the plan.
+
 **What this means for the project.** High-SNR accuracy is not a meaningful headline number on this
 dataset. The comparison between the scratch CNN and ResNet18 should be made on models trained across
 all SNR levels and judged mainly in the range where brightness alone fails, together with the
 hidden-burst test.
 
-**Not yet checked:** models trained on all SNR levels; whether the brightness gap comes from
+**Not yet checked:** a ResNet18 trained on all SNR levels; the hidden-burst control; whether the brightness gap comes from
 the recording environment, the receiver settings, or the image scaling used by the dataset authors
 (we cannot tell from the images alone).

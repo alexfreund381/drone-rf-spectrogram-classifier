@@ -193,7 +193,10 @@ general look of the recording rather than the drone signal. This is called a con
 every drone burst the CNN still said "drone" for 98.8% of drone images. Background images are simply
 brighter than drone images at high SNR. Between about −10 and −4 dB the picture changes: there the
 CNN finds more drone images than the brightness baseline, and hiding the bursts removes most of its
-detections. (Validation data, scratch CNN only so far; `docs/RESULTS.md`.)
+detections. When we trained the CNN on images at all noise levels instead, it reached 0.962 accuracy against
+0.911 for the brightness baseline trained the same way, and hiding the bursts cut its drone detections
+by more than half. So a model trained that way does respond to the drone signal, although most of the
+separation is still available from brightness-type statistics. (Validation data; `docs/RESULTS.md`.)
 
 **Follow-up you might get:** *Then what is your result worth?* It shows how well these methods
 separate these recordings and how the two models compare under noise. It does not show that the system
@@ -453,3 +456,39 @@ using something other than the bursts, which is one of our confound checks.
 `docs/CONFOUNDS_AND_LIMITATIONS.md`.
 
 *Status: draft · Evidence: VERIFIED (labels identical across SNR)*
+
+### Q: Your first CNN scored 99.7%. Why did you say that was not a good result?
+
+**Short answer:** Because a rule using 39 brightness numbers scored 100% on the same images, and the
+same CNN scored only 71% once noisy images were included.
+
+**Explanation:** A high score only means something if the test is hard. On clean images of this
+dataset, drone and background recordings differ in overall brightness, so almost anything can separate
+them. The 99.7% told us about the dataset, not about the network. When we evaluated the same network on
+images with added noise, where the brightness difference fades, it missed 39% of the drone images.
+
+**In our project:** Run A1 against run A0 in `docs/RESULTS.md`, Tables 1 and 2.
+
+**Follow-up you might get:** *How did you fix it?* We trained the same network on images at all noise
+levels (run C1). Validation accuracy across all noise levels rose from 0.713 to 0.962.
+
+*Status: draft · Evidence: VERIFIED on validation data*
+
+### Q: What mattered more, the choice of network or the training data?
+
+**Short answer:** So far, the training data. Changing the network from our scratch CNN to a pretrained
+ResNet18 changed little; changing the training images from clean-only to all noise levels changed a
+lot.
+
+**Explanation:** With clean-only training, the scratch CNN and the pretrained ResNet18 scored 0.713
+and 0.675 on validation images at all noise levels, a difference smaller than the uncertainty. With
+the scratch CNN unchanged but trained on all noise levels, the score became 0.962. A model can only
+learn to handle conditions it has seen.
+
+**In our project:** `docs/RESULTS.md`, Tables 2 and 3.
+
+**Follow-up you might get:** *Is that conclusion final?* No. We have not yet trained ResNet18 on all
+noise levels, so we do not know whether pretraining helps under the better training condition, and
+none of this has been checked on the test set.
+
+*Status: draft · Evidence: VERIFIED on validation data; comparison incomplete (C1b not run)*
