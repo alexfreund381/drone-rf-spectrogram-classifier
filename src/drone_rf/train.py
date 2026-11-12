@@ -129,7 +129,9 @@ def load_checkpoint(path: str | Path, device: str = "cpu") -> tuple[nn.Module, d
     model = build_model(model_cfg)
     model.load_state_dict(ckpt["model_state"])
     if hasattr(model, "pretrained"):
+        # the architecture was rebuilt without downloading; restore what the run actually started from
         model.pretrained = was_pretrained
+        model.weights_name = ckpt.get("initial_weights", "unknown" if was_pretrained else "random")
     return model.to(device).eval(), ckpt
 
 
@@ -158,6 +160,9 @@ def train_run(config: dict) -> Path:
     in_mean, in_std = train_ds.mean_std()  # training images only
 
     model = build_model(cfg["model"], in_mean, in_std).to(device)
+    # recorded now, before any reload, so the log states what the run really started from
+    initial_weights = getattr(model, "weights_name", "random")
+    pretrained_label = initial_weights if getattr(model, "pretrained", False) else "none (random init)"
     counts = np.bincount(train_ds.labels, minlength=2)
     weight = None
     if tcfg["class_weights"]:
@@ -236,6 +241,7 @@ def train_run(config: dict) -> Path:
                         "in_std": in_std,
                         "split_hash": shash,
                         "git_commit": git_commit(),
+                        "initial_weights": initial_weights,
                     },
                 )
                 stale = 0
@@ -252,9 +258,7 @@ def train_run(config: dict) -> Path:
     meta = {
         "run_name": cfg["run_name"],
         "model": cfg["model"],
-        "pretrained_weights": getattr(model, "weights_name", "none (random init)")
-        if getattr(model, "pretrained", False)
-        else "none (random init)",
+        "pretrained_weights": pretrained_label,
         "parameters": count_parameters(model)["total"],
         "seed": cfg["seed"],
         "split_hash": shash,

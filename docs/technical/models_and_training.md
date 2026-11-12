@@ -105,6 +105,7 @@ python -m drone_rf.cli train --config configs/noise_robustness.yaml
 | Splits file edited after training | `evaluate` compares hashes and refuses |
 | Pretrained weights cannot be downloaded | torchvision raises; the run is blocked. A random ResNet18 is logged as `none (random init)`, never as pretrained |
 | Quarantined row passed to the dataset | `ValueError` |
+| Run log misreports initial weights | Fixed 2026-11-12: `meta.json` once said "random" for a pretrained run because the label was read after reloading the checkpoint. The label is now captured before training and stored in the checkpoint as `initial_weights` |
 
 ## Tests
 
@@ -114,7 +115,7 @@ python -m drone_rf.cli train --config configs/noise_robustness.yaml
 - Both models output `[batch, 2]`; gradients reach the first layer; freezing leaves exactly the head trainable and stops gradients to the backbone.
 - A tiny CNN memorises 16 fixture images (pipeline sanity).
 - Loss falls on the learnable fixture set; checkpoint reload gives identical predictions.
-- Training writes no test-set file; a random ResNet18 is not logged as pretrained.
+- Training writes no test-set file; a random ResNet18 is not logged as pretrained, and a pretrained one is not logged as random (regression test).
 - `pytest -m integration` downloads the real ImageNet weights and checks they differ from random.
 
 ## Known limitations

@@ -2,7 +2,7 @@
 
 **Working title:** Drone Radio-Frequency Signal Classification from Spectrograms Using Convolutional Neural Networks
 **Course:** Intro to AI main project (computer vision / CNN option, team of 3–4)
-**Last updated:** 2026-11-11
+**Last updated:** 2026-11-12
 
 This is the single document every team member should read first. It covers what we are building, the
 dataset, the software architecture, the testing strategy, the experiments, and who can work on what.
@@ -64,23 +64,23 @@ seven-class variant. These never replace the binary deliverable.
 
 ---
 
-## 2. Current status (2026-11-11)
+## 2. Current status (2026-11-12)
 
 | Item | Status |
 |---|---|
 | GitHub repository | Public: https://github.com/alexfreund381/drone-rf-spectrogram-classifier |
 | Professor approval of dataset and task | **Approved** (reported by the team on 2026-11-10) |
 | Code: data pipeline, splits, both models, training, evaluation, baselines, confound checks, CLI | **Implemented** |
-| Tests | 120 passing on synthetic fixtures (`pytest -q`); 1 integration test passed (real ImageNet ResNet18 weights downloaded and verified) |
+| Tests | 121 passing on synthetic fixtures (`pytest -q`); 1 integration test passed (real ImageNet ResNet18 weights downloaded and verified) |
 | Label audit of the whole dataset | **VERIFIED**: 333,164 label files, 12,814 source samples, 12,504 usable ([DATASET_AUDIT.md](DATASET_AUDIT.md)) |
 | Train/val/test split | **Frozen**, hash `ddfcbce03785a3af` ([SPLIT_PROTOCOL.md](SPLIT_PROTOCOL.md)) |
 | Images on disk | Pilot sample: 10,407 images (3.2 GB of the 101 GB archive), 7,107 distinct source samples |
 | Full 101 GB archive | Not downloaded |
 | Experiment configs (A1, A2, B1, C1, C1b) | Written in `configs/` |
-| Baselines (A0) and scratch CNN (A1) | **Run on real images; validation results in [RESULTS.md](RESULTS.md)** |
-| Pretrained ResNet18 (B1), augmentation (A2), all-SNR training (C1, C1b) | **Not run** |
+| Baselines (A0), scratch CNN (A1), pretrained ResNet18 (B1) | **Run on real images; validation results in [RESULTS.md](RESULTS.md)** |
+| All-SNR training (C1, C1b), augmentation (A2) | **Not finished** |
 | Test split | **Untouched** |
-| Main finding so far | At SNR ≥ 0 dB a 39-number brightness baseline separates the classes perfectly; the CNN does not beat it there and ignores the drone bursts at high SNR. See RESULTS.md |
+| Main findings so far | At SNR ≥ 0 dB a 39-number brightness baseline separates the classes perfectly; neither network beats it there, and both ignore the drone bursts at high SNR. Trained on clean images only, the pretrained ResNet18 is no better on noisy images than the scratch CNN. See RESULTS.md |
 | CI workflow | Written (`.github/workflows/ci.yml`); its result on GitHub has not been checked |
 | Deadline, grading rubric, presentation length, workstream owners | UNKNOWN — the team must add them |
 
@@ -96,7 +96,7 @@ The exact grading rubric and the deadline have not been given to us. Do not inve
 | 2 | Interesting real-world dataset; ≥100 observations per class; ~5,000 images preferred | 8,562 drone and 3,942 background source samples (not counting noise copies) | `docs/DATASET_AUDIT.md` §2 | Done (VERIFIED) |
 | 3 | Dataset described: URL, download link, size, shape, class counts, targets, what is predicted | Audit document | `docs/DATASET_AUDIT.md` | Done |
 | 4 | First network built from scratch, no pretrained weights | `ScratchCNN` in `models.py`, run A1 | `docs/RESULTS.md` | Trained (validation results only) |
-| 5 | Second model from a pretrained network; choose fine-tuning epochs | ResNet18 (ImageNet), two-stage fine-tune, early stopping on validation | `runs/`, `docs/RESULTS.md` | Code done, weights verified; **not trained yet** |
+| 5 | Second model from a pretrained network; choose fine-tuning epochs | ResNet18 (ImageNet), two-stage fine-tune, early stopping on validation | `docs/RESULTS.md` ("Choosing the fine-tuning length") | Trained (validation results only) |
 | 6 | Train / validation / test split; tune hyperparameters and augmentation; record experiments; analyze errors | Group-safe frozen split; experiment matrix (§7); error gallery | `docs/SPLIT_PROTOCOL.md`, `docs/RESULTS.md` | Split done; A0 and A1 recorded; **no tuning, augmentation or error gallery yet** |
 | 7 | Runnable prototype and team presentation; everyone can explain decisions | CLI + docs + Q&A + presentation notes | repo, `docs/qa/`, `docs/presentation/` | Prototype runs; presentation outline only |
 
@@ -558,12 +558,12 @@ fixture deliberately includes the awkward cases:
 | A0 | Majority, brightness and energy baselines | SNR 10–20 dB | reference point | `binary_cnn.yaml` via `baselines` | **done** (validation) |
 | A1 | Scratch CNN | SNR 10–20 dB | no augmentation | `binary_cnn.yaml` | **done** (validation) |
 | A2 | Scratch CNN | same as A1 | one augmentation bundle | `binary_cnn_aug.yaml` | not run |
-| B1 | Pretrained ResNet18 | same as A1 | head training, then fine-tuning | `resnet18.yaml` | not run |
+| B1 | Pretrained ResNet18 | same as A1 | head training, then fine-tuning | `resnet18.yaml` | **done** (validation) |
 | C1 | Scratch CNN | all SNR levels | noise robustness | `noise_robustness.yaml` | not run |
 | C1b | Pretrained ResNet18 | all SNR levels | noise robustness | `noise_robustness_resnet18.yaml` | not run |
 | C2 | Better of A/B | same as its base run | one of: learning rate, weight decay, input size | to be written | optional |
 
-Priority for what remains: B1, then C1 and C1b. The A0/A1 results show that high-SNR scores are
+Priority for what remains: C1 and C1b. The A0/A1 results show that high-SNR scores are
 saturated by a trivial baseline, so the all-SNR runs (C1, C1b) are where the two models can actually
 be compared. A2 matters less.
 
@@ -600,7 +600,7 @@ No claims of statistical significance from correlated SNR copies. No comparison 
 | 1 Data metadata | Parsers, synthetic fixtures, TAR/range tools, label index, manifest, audit | **Done**; `DATASET_AUDIT.md` has exact counts |
 | 2 Splits and preprocessing | Group-safe split, image sample, transforms | **Done**: split frozen, 10,407 images on disk. Preview gallery not made yet |
 | 3 Scratch CNN | Model, dataset, training loop, metrics, A0 and A1 | **Done**: A0 and A1 run, validation results in RESULTS.md |
-| 4 ResNet18 | Pretrained weights verified, two-stage fine-tune, B1 | Code and tests done, weights verified. **B1 not run** |
+| 4 ResNet18 | Pretrained weights verified, two-stage fine-tune, B1 | **Done**: B1 run, validation results in RESULTS.md |
 | 5 Robustness and analysis | A2, C1, optional C2, test-set evaluation, plots, confound analysis | Confound checks and SNR plots done for A1. A2, C1, C1b and the test evaluation **not run** |
 | 6 Presentation and release | Report, Q&A complete, slides built from notes, demo | Q&A has 25 draft entries; presentation is an outline with placeholders |
 
@@ -649,12 +649,7 @@ With three people, merge C and D's model work and move evaluation to B.
 
 ## 11. Immediate next steps
 
-1. Train the pretrained ResNet18 on the same data as A1, then evaluate it the same way:
-   ```
-   python -m drone_rf.cli train --config configs/resnet18.yaml
-   python -m drone_rf.cli evaluate --checkpoint runs/b1_resnet18_pretrained/best.pt --split val --all-snr --name val_all_snr
-   python -m drone_rf.cli confound-check --checkpoint runs/b1_resnet18_pretrained/best.pt --split val --all-snr
-   ```
+1. Done: baselines, scratch CNN and pretrained ResNet18 on clean images (RESULTS.md).
 2. Train on all SNR levels (`configs/noise_robustness.yaml`, then `noise_robustness_resnet18.yaml`).
    This is the comparison that matters, because high-SNR scores are saturated by a trivial baseline.
    Expect these to take a few hours each on this CPU.

@@ -1,0 +1,59 @@
+{
+  "checkpoint": "runs/b1_resnet18_pretrained/best.pt",
+  "split": "val",
+  "snr_levels": [
+    10,
+    12,
+    14,
+    16,
+    18,
+    20
+  ],
+  "n_drone_images": 257,
+  "n_drone_groups": 68,
+  "n_background_images": 138,
+  "approx_fraction_of_pixels_changed": 0.013688082540895735,
+  "drone_recall_original": 1.0,
+  "drone_recall_bursts_hidden": 0.9922178988326849,
+  "mean_p_drone_original": 0.9997254610061646,
+  "mean_p_drone_bursts_hidden": 0.9721736907958984,
+  "background_false_positive_rate": 0.0,
+  "per_snr": [
+    {
+      "snr_db": 10,
+      "n_drone_images": 39,
+      "recall_original": 1.0,
+      "recall_bursts_hidden": 1.0
+    },
+    {
+      "snr_db": 12,
+      "n_drone_images": 38,
+      "recall_original": 1.0,
+      "recall_bursts_hidden": 0.9736842105263158
+    },
+    {
+      "snr_db": 14,
+      "n_drone_images": 46,
+      "recall_original": 1.0,
+      "recall_bursts_hidden": 1.0
+    },
+    {
+      "snr_db": 16,
+      "n_drone_images": 59,
+      "recall_original": 1.0,
+      "recall_bursts_hidden": 1.0
+    },
+    {
+      "snr_db": 18,
+      "n_drone_images": 45,
+      "recall_original": 1.0,
+      "recall_bursts_hidden": 1.0
+    },
+    {
+      "snr_db": 20,
+      "n_drone_images": 30,
+      "recall_original": 1.0,
+      "recall_bursts_hidden": 0.9666666666666667
+    }
+  ]
+}

@@ -3,9 +3,9 @@
 What could make our results look better than they are, how we check for it, and what the project
 cannot show regardless.
 
-**State on 2026-11-11:** the checks have been run for the baselines and the scratch CNN (run A1) on
-validation data. Findings are in section 8. They have not been run for ResNet18 or for models trained
-on all SNR levels, because those models do not exist yet.
+**State on 2026-11-12:** the checks have been run for the baselines, the scratch CNN (A1) and the
+pretrained ResNet18 (B1) on validation data. Findings are in section 8. They have not been run for
+models trained on all SNR levels, because those are not finished.
 
 ## 1. The recording-environment confound
 
@@ -89,7 +89,7 @@ The boxes come from the authors' energy-based segmentation, not from people (CLA
 - Comparability with the source paper: it reports object-detection mAP; we report image-level
   classification metrics.
 
-## 8. Findings so far (validation data, baselines and scratch CNN A1)
+## 8. Findings so far (validation data; baselines, scratch CNN A1, ResNet18 B1)
 
 Numbers and source files are in [RESULTS.md](RESULTS.md).
 
@@ -99,8 +99,9 @@ Numbers and source files are in [RESULTS.md](RESULTS.md).
    images 128.5 on a 0–255 scale. The gap shrinks as noise is added and is gone by about −20 dB.
    (An earlier note in this document, based on four images, had the direction the other way round;
    the table over 7,195 training images supersedes it.)
-3. **At high SNR the scratch CNN does not use the drone bursts.** With every annotated burst painted
-   over, it still calls 98.8% of drone images "drone" (99.6% unmasked).
+3. **At high SNR neither network uses the drone bursts.** With every annotated burst painted over,
+   the scratch CNN still calls 98.8% of drone images "drone" (99.6% unmasked) and ResNet18 99.2%
+   (100% unmasked).
 4. **In the middle SNR range it does use them.** Between −10 and −4 dB, hiding the bursts cuts drone
    recall sharply (for example from 0.77 to 0.06 at −8 dB), and in that range the CNN finds more drone
    images than the brightness baseline.
@@ -113,6 +114,6 @@ dataset. The comparison between the scratch CNN and ResNet18 should be made on m
 all SNR levels and judged mainly in the range where brightness alone fails, together with the
 hidden-burst test.
 
-**Not yet checked:** ResNet18; models trained on all SNR levels; whether the brightness gap comes from
+**Not yet checked:** models trained on all SNR levels; whether the brightness gap comes from
 the recording environment, the receiver settings, or the image scaling used by the dataset authors
 (we cannot tell from the images alone).

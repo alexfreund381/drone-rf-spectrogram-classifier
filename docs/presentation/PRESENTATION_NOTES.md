@@ -3,9 +3,9 @@
 Slide-by-slide source material. Format and rules are in
 [../DOCUMENTATION_GUIDE.md](../DOCUMENTATION_GUIDE.md) §4. Build the deck from this file.
 
-**State on 2026-11-11:** dataset counts, model sizes, and validation results for the baselines and
-the scratch CNN are filled in. ResNet18 and the all-SNR runs have not been trained, and the test set
-is untouched, so the headline-results slides are still placeholders. Speakers and time limits are unassigned because the presentation length has not been
+**State on 2026-11-12:** dataset counts, model sizes, and validation results for the baselines, the
+scratch CNN and the pretrained ResNet18 (all trained on clean images) are filled in. The all-SNR runs
+are not finished and the test set is untouched, so the headline-results slides are still placeholders. Speakers and time limits are unassigned because the presentation length has not been
 given to us.
 
 | Section | Slides | Speaker |
@@ -153,7 +153,7 @@ test is not a real test. We split by recording group, freeze the split, and neve
 - Brightness/energy features + logistic regression
 
 **Numbers (validation, SNR 10–20 dB, 395 images):** majority 0.651 accuracy; brightness (one number)
-0.825; energy (39 numbers) 1.000; scratch CNN 0.997.
+0.825; energy (39 numbers) 1.000; scratch CNN 0.997; pretrained ResNet18 1.000.
 
 **Visual:** TO CREATE: bar chart from `artifacts/results/compare_val_snr10to20.csv`.
 
@@ -221,16 +221,17 @@ last layer, train the head, then fine-tune.
 
 **Likely question:** Why would photo features help on spectrograms? → Q&A "Why two models…"
 
-**Evidence:** n/a (concept); fine-tuning epochs `PLACEHOLDER`
+**Evidence:** 3 head-only epochs reached 0.989 validation macro-F1; the first fine-tuning epoch reached
+1.000; training stopped after 6 fine-tuning epochs and kept epoch 5 (VALIDATION ONLY, `docs/RESULTS.md`)
 
 ## Slide 12: How we trained and chose settings without touching the test set
 
 **The one thing the audience should remember:** All choices were made on validation data; the test set
 was used once.
 
-**Visual:** `artifacts/figures/val_snr10to20/a1_scratch_cnn_curves.png` (scratch CNN; ResNet18 curve `PLACEHOLDER`).
+**Visual:** `artifacts/figures/val_snr10to20/a1_scratch_cnn_curves.png` and `b1_resnet18_pretrained_curves.png`.
 
-**Evidence:** scratch CNN: 18 epochs, best at epoch 13, 43 minutes on CPU (`docs/RESULTS.md`). ResNet18: `PLACEHOLDER`
+**Evidence:** scratch CNN: 18 epochs, best at epoch 13, 43 minutes on CPU (`docs/RESULTS.md`). ResNet18: 9 epochs, best at epoch 5, 24 minutes
 
 *Handoff:* "Here is what happened on recordings the models had never seen."
 

@@ -179,3 +179,30 @@ def test_cli_help_and_end_to_end(tmp_path, capsys):
     assert len(list((tmp_path / "sel" / "images").glob("*.png"))) == 36 * 3
     assert json.loads((summary / "summary.json").read_text())["n_images"] == 108
     capsys.readouterr()
+
+
+def test_meta_reports_the_weights_the_run_started_from(workdir, fixture_dir, monkeypatch):
+    """Regression test: a pretrained run was once logged as 'random' because the label was read
+    after the model had been rebuilt from its checkpoint."""
+    import drone_rf.train as train_module
+    from drone_rf.models import ResNet18Classifier
+
+    def fake_build(cfg, in_mean=0.5, in_std=0.25):
+        model = ResNet18Classifier(pretrained=False)  # no download in tests
+        if cfg.get("pretrained"):
+            model.pretrained, model.weights_name = True, "FAKE_PRETRAINED_FOR_TEST"
+        return model
+
+    monkeypatch.setattr(train_module, "build_model", fake_build)
+    cfg = _cfg(
+        workdir,
+        fixture_dir,
+        run_name="smoke_resnet_labelled_pretrained",
+        model={"name": "resnet18", "pretrained": True},
+        train={"batch_size": 16, "epochs": 1, "head_epochs": 0, "lr": 1e-4, "patience": 0, "num_threads": 2},
+    )
+    run = train_run(cfg)
+    assert json.loads((run / "meta.json").read_text())["pretrained_weights"] == "FAKE_PRETRAINED_FOR_TEST"
+    model, ckpt = train_module.load_checkpoint(run / "best.pt")
+    assert ckpt["initial_weights"] == "FAKE_PRETRAINED_FOR_TEST"
+    assert model.pretrained and model.weights_name == "FAKE_PRETRAINED_FOR_TEST"

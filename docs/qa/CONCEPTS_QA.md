@@ -1,8 +1,8 @@
 # Conceptual Q&A
 
 Plain-language questions and answers about the project. Format and rules are in
-[../DOCUMENTATION_GUIDE.md](../DOCUMENTATION_GUIDE.md) §3. Results quoted here are validation results for the baselines and the scratch CNN only; ResNet18 has
-not been trained and the test set has not been used.
+[../DOCUMENTATION_GUIDE.md](../DOCUMENTATION_GUIDE.md) §3. Results quoted here are validation results for models trained on clean images only; the test set has
+not been used.
 
 All entries below are **drafts** and need review by a teammate.
 
@@ -229,11 +229,17 @@ photos, though, so whether it helps here is something we have to measure rather 
 **In our project:** Model A is our own four-stage CNN. Model B is ResNet18 with ImageNet weights, with
 the grayscale image copied into three channels. Both use the same split and evaluation.
 
+**What we found so far (validation only):** on clean images both score essentially 100%, as does a
+trivial brightness baseline, so that comparison is uninformative. On noisy images, after training on
+clean images only, ResNet18 was not better than the scratch CNN (0.675 against 0.713 accuracy, with
+overlapping uncertainty). So far we have no evidence that ImageNet pretraining helps here
+(`docs/RESULTS.md`).
+
 **Follow-up you might get:** *If ResNet18 wins, is that because of pretraining or because it is a
 bigger network?* Fair point; the comparison changes two things at once. An optional run of ResNet18
 with random weights would separate the two effects.
 
-*Status: draft · Evidence: n/a (no runs yet)*
+*Status: draft · Evidence: VERIFIED on validation data (runs A1, B1)*
 
 ### Q: How did you use AI tools, and do you understand the code?
 
